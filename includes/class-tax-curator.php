@@ -89,9 +89,19 @@ class CUR_Tax_Curator extends CUR_Singleton {
 	public function set_default_term() {
 		$terms = get_terms( $this->tax_slug, array( 'hide_empty' => false ) );
 
+		/**
+		 * Add our terms
+		 */
 		if ( empty( $terms ) ) {
-			// $terms is empty, let's add our default term
-			wp_insert_term( 'curate-item', $this->tax_slug );
+
+			// Term for curating items
+			wp_insert_term( $this->term_curate, $this->tax_slug );
+
+			// Term for featuring curated items
+			wp_insert_term( $this->term_feature, $this->tax_slug );
+
+			// Term for pinning items
+			wp_insert_term( $this->term_pin, $this->tax_slug );
 		}
 	}
 }
