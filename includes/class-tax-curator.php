@@ -16,32 +16,10 @@ class CUR_Tax_Curator extends CUR_Singleton {
 	public $tax_slug = 'cur-tax-curator';
 
 	/**
-	 * Curate term slug
-	 *
-	 * @var string
-	 */
-	public $term_curate = 'cur-curate-item';
-
-	/**
-	 * Feature term slug
-	 *
-	 * @var string
-	 */
-	public $term_feature = 'cur-feature-item';
-
-	/**
-	 * Pin term slug
-	 *
-	 * @var string
-	 */
-	public $term_pin = 'cur-pin-item';
-
-	/**
 	 * Build it
 	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_taxonomies' ) );
-		add_action( 'init', array( $this, 'set_default_term' ), 900 );
 	}
 
 	/**
@@ -83,25 +61,28 @@ class CUR_Tax_Curator extends CUR_Singleton {
 
 	/**
 	 * Sets the default terms for us to use
-	 *
-	 * @todo move this to plugin activate
+	 * Fires on plugin activation
 	 */
-	public function set_default_term() {
+	public function setup_default_terms() {
+
+		$modules = cur_get_modules();
+
+		// Check for all enabled modules, add or delete terms as necessary
 		$terms = get_terms( $this->tax_slug, array( 'hide_empty' => false ) );
 
-		/**
-		 * Add our terms
-		 */
-		if ( empty( $terms ) ) {
+		foreach ( $modules as $module => $module_info ) {
 
-			// Term for curating items
-			wp_insert_term( $this->term_curate, $this->tax_slug );
+			// For enabled modules check to see if the term exists, if it doesn't add it
+			if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] ) {
 
-			// Term for featuring curated items
-			wp_insert_term( $this->term_feature, $this->tax_slug );
+				// Check to see if we have this term already
+				$module_term = get_term_by( 'slug', $module_info['slug'], $this->tax_slug );
 
-			// Term for pinning items
-			wp_insert_term( $this->term_pin, $this->tax_slug );
+				// If we don't have it then let's add it
+				if ( false === $module_term && ! is_wp_error( $module_term ) ) {
+					wp_insert_term( $module_info['slug'], $this->tax_slug );
+				}
+			}
 		}
 	}
 }
@@ -110,4 +91,8 @@ CUR_Tax_Curator::factory();
 
 function cur_get_tax_slug() {
 	return CUR_Tax_Curator::factory()->tax_slug;
+}
+
+function cur_setup_default_terms() {
+	return CUR_Tax_Curator::factory()->setup_default_terms();
 }

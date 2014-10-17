@@ -43,26 +43,6 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 		// Modify the page row actions in admin
 		add_filter( 'page_row_actions', array( $this, 'filter_page_row_actions' ), 10, 2 );
-
-		/**
-		 * @todo using bostonmagazine's featured item curator as a model
-		 *
-		 * Workflow:
-		 * - Have a radio select box that allows user to choose the post type they wish to use
-		 * - Perform query to grab the most recent(all?) items for that post type
-		 * - Display items in chronological order in select dropdown
-		 * - User selects one item from dropdown
-		 * - Store selection as showcase item to be related/tied to that item
-		 * - Think about performance of front end display? - Should definitely be cached, regenerated any time a new curated item is saved
-		 *
-		 * Thoughts:
-		 * - use hidden (kind of) post type (don't allow for manual creation of new item)
-		 * - have checkbox on main post type publish box that allows for creation of new item
-		 * - showcase admin archive listing page allows for sorting
-		 * - create as separate plugin
-		 *
-		 * @todo add link/info on curated item edit screen from main item (possibly display meta/images/etc)
-		 */
 	}
 
 	/**
@@ -99,22 +79,35 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			return;
 		}
 
-		$is_curated = has_term( 'curate-item', cur_get_tax_slug() );
-		?>
-		<div class="misc-pub-section curtime misc-pub-section">
-			<input type="checkbox" id="curate-item" name="curate_item" <?php checked( true, $is_curated ); ?> value="on" />
-			<?php
-			printf( '<label for="curate-item">%s</label>', __( 'Curate item', 'cur' ) );
+		$modules = cur_get_modules();
 
-			if ( true === $is_curated ) {
-				printf( ' <a href="%s" target="_blank">%s</a>',
-					get_edit_post_link( cur_get_related_id( $post->ID ) ),
-					__( 'Edit', 'cur' ) );
+		$is_curated = false;
+
+		foreach ( $modules as $module => $module_info ) {
+			if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] && ! empty( $module_info['slug'] ) ) {
+				$term = $module_info['slug'];
+
+				$has_term = has_term( $term, cur_get_tax_slug() );
+
+				// Only show the other modules if this item is curated
+				if ( 'curator' === $module && $has_term ) {
+					$is_curated = true;
+				}
+
+				if ( 'curator' === $module || $is_curated ) {
+					?>
+					<div class="misc-pub-section">
+						<input type="checkbox" id="<?php esc_attr_e( $term ); ?>" name="<?php esc_attr_e( $term ); ?>" <?php checked( true, $has_term ); ?> value="on" />
+						<?php printf( '<label for="%s">%s</label>', esc_attr( $term ), esc_html( $module_info['label'] ) ); ?>
+						<?php
+						if ( 'curator' === $module ) {
+							wp_nonce_field( 'cur_curate_item', 'cur_curate_item_nonce' );
+						} ?>
+					</div>
+				<?php
+				}
 			}
-
-			wp_nonce_field( 'cur_curate_item', 'cur_curate_item_nonce' ); ?>
-		</div>
-	<?php
+		}
 	}
 
 	/**
@@ -128,16 +121,6 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			return;
 		}
 
-		// Check nonce set
-		if ( ! isset( $_POST['cur_curate_item_nonce'] ) ) {
-			return;
-		}
-
-		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['cur_curate_item_nonce'], 'cur_curate_item' ) ) {
-			return;
-		}
-
 		// If autosave, our form has not been submitted, don't do anything
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -148,10 +131,24 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			return;
 		}
 
-		// is it already curated?
-		$curate_term = cur_get_curate_term();
-		$is_curated = has_term( $curate_term->term_id, cur_get_tax_slug() );
+		$modules = cur_get_modules();
 
+
+		// Check nonce set
+		if ( ! isset( $_POST['cur_curate_item_nonce'] ) ) {
+			return;
+		}
+
+		// Verify nonce
+		if ( ! wp_verify_nonce( $_POST['cur_curate_item_nonce'], 'cur_curate_item' ) ) {
+			return;
+		}
+
+		// is it already curated?
+		$curate_term = cur_get_module_term( 'curator' );
+		$is_curated = has_term( $curate_term, cur_get_tax_slug() );
+
+		// @todo allow setting all terms here, not just one
 		// Already curated
 		if ( ! empty( $is_curated ) && ! is_wp_error( $is_curated ) ) {
 
@@ -166,7 +163,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		} else {
 
 			// Not currently curated
-			if ( isset( $_POST['curate_item'] ) && 'on' === $_POST['curate_item'] ) {
+			if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
 
 				// Start curation for this item!
 				cur_create_curated_item( $post_id, $post );

@@ -57,6 +57,7 @@ function cur_init() {
 	load_textdomain( 'cur', WP_LANG_DIR . '/cur/cur-' . $locale . '.mo' );
 	load_plugin_textdomain( 'cur', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
+add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 
 /**
  * Activate the plugin
@@ -66,6 +67,8 @@ function cur_activate() {
 	cur_init();
 
 	flush_rewrite_rules();
+
+	add_action( 'init', 'cur_setup_default_terms', 900 );
 }
 register_activation_hook( __FILE__, 'cur_activate' );
 
