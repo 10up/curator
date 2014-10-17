@@ -38,6 +38,12 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 		add_action( 'trashed_post', array( $this, 'trashed_post' ), 200 );
 
+		// Modify the edit post link to go directly to the original item
+		add_filter( 'get_edit_post_link', array( $this, 'filter_edit_post_link' ), 10, 3 );
+
+		// Modify the page row actions in admin
+		add_filter( 'page_row_actions', array( $this, 'filter_page_row_actions' ), 10, 2 );
+
 		/**
 		 * @todo using bostonmagazine's featured item curator as a model
 		 *
@@ -237,6 +243,47 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		);
 
 		register_post_type( $this->cpt_slug, $args );
+	}
+
+	/**
+	 * Modify the curator post edit link to point to the original post
+	 *
+	 * @param $edit_link
+	 * @param $post_id
+	 * @param $context
+	 *
+	 * @return mixed
+	 */
+	public function filter_edit_post_link( $edit_link, $post_id, $context ) {
+
+		if ( $this->cpt_slug === get_post_type( $post_id ) ) {
+
+			// We found a curator post type, let's get it's related post ID
+			$related_post_id = cur_get_related_id( $post_id );
+
+			// Replace the Curated post type ID with the original post ID
+			$edit_link = str_replace( $post_id, $related_post_id, $edit_link );
+		}
+
+		return $edit_link;
+	}
+
+	/**
+	 * Remove the quick edit action in post admin edit screen
+	 *
+	 * @param $actions
+	 * @param $post
+	 *
+	 * @return mixed
+	 */
+	public function filter_page_row_actions( $actions, $post ) {
+		if ( $this->cpt_slug === get_post_type( $post ) ) {
+			if ( ! empty( $actions['inline hide-if-no-js'] ) ) {
+				unset( $actions['inline hide-if-no-js'] );
+			}
+		}
+
+		return $actions;
 	}
 }
 
