@@ -230,7 +230,7 @@ class CUR_Curator extends CUR_Singleton {
 		// Remove item module
 		$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
-		$curated_id = get_post_meta( $post_id, $this->curated_meta_slug, true );
+		$curated_id = cur_get_related_id( $post_id );
 
 		// Unset the curation term of the main post
 		wp_remove_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );
