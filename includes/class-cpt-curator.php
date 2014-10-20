@@ -81,24 +81,28 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 		$modules = cur_get_modules();
 
-		$is_curated = false;
+		$curated_post = cur_get_related_id( $post->ID );
+
+		if ( false !== $curated_post ) {
+			$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+		}
 
 		foreach ( $modules as $module => $module_info ) {
 			if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] && ! empty( $module_info['slug'] ) ) {
-				$term = $module_info['slug'];
 
-				$has_term = has_term( $term, cur_get_tax_slug() );
+				// Get the term object information
+				$term = get_term_by( 'slug', $module_info['slug'], cur_get_tax_slug() );
 
 				// Only show the other modules if this item is curated
-				if ( 'curator' === $module && $has_term ) {
-					$is_curated = true;
-				}
-
-				if ( 'curator' === $module || $is_curated ) {
+				if ( 'curator' === $module || false !== $curated_post ) {
+					$checked = false;
+					if ( ! empty( $associated_terms[ $term->term_id ] ) ) {
+						$checked = true;
+					}
 					?>
 					<div class="misc-pub-section">
-						<input type="checkbox" id="<?php esc_attr_e( $term ); ?>" name="<?php esc_attr_e( $term ); ?>" <?php checked( true, $has_term ); ?> value="on" />
-						<?php printf( '<label for="%s">%s</label>', esc_attr( $term ), esc_html( $module_info['label'] ) ); ?>
+						<input type="checkbox" id="<?php esc_attr_e( $module_info['slug'] ); ?>" name="<?php esc_attr_e( $module_info['slug'] ); ?>" <?php checked( true, $checked ); ?> value="on" />
+						<?php printf( '<label for="%s">%s</label>', esc_attr( $module_info['slug'] ), esc_html( $module_info['label'] ) ); ?>
 						<?php
 						if ( 'curator' === $module ) {
 							wp_nonce_field( 'cur_curate_item', 'cur_curate_item_nonce' );
@@ -147,17 +151,16 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		 * Curate/Uncurate item logic
 		 * Run before anything else
 		 */
-		if ( ! empty( $modules['curator'] ) && $modules['curator']['enabled'] && true === $modules['curator'] ) {
-			$curated_post = false;
+		if ( ! empty( $modules['curator'] ) && $modules['curator']['enabled'] && true === $modules['curator']['enabled'] ) {
+			$curated_post = cur_get_related_id( $post->ID );
 			$curate_term = cur_get_module_term( 'curator' );
-			$is_curated = has_term( cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
 			// This post is not curated
-			if ( false === $is_curated ) {
+			if ( false === $curated_post ) {
 
 				// This post is not curated; we wish to curate it
 				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
-					$curated_post = $this->curate_post( $post_id, $post );
+					$curated_post = cur_curate_post( $post_id, $post );
 				}
 			}
 
@@ -166,7 +169,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 				// This post is curated; we don't want to uncurate it. Grab the curated post id
 				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
-					$curated_post = $this->get_related_id( $post_id );
+					$curated_post = cur_get_related_id( $post_id );
 				}
 
 				// This post is curated and we want to uncurate it
@@ -177,7 +180,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 			// Only run other modules if this post has been curated
 			if ( false !== $curated_post ) {
-				
+
 				/**
 				 * Run through and set/unset our other modules
 				 */
@@ -185,42 +188,44 @@ class CUR_CPT_Curator extends CUR_Singleton {
 					if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] && ! empty( $module_info['slug'] ) ) {
 
 						// Skip the curator module, already handled that logic above
-						if ( 'curator' === $module['slug'] ) {
+						if ( 'curator' === $module ) {
 							continue;
 						}
 
-						$term = cur_get_module_term( $module['slug'] );
+						// Get term slug
+						$term = cur_get_module_term( $module );
 
+						// See if term is currently associated with post
 						$has_term = has_term( $term, cur_get_tax_slug() );
 
-						// Only show the other modules if this item is curated
-						//				if ( 'curator' !== $module || ! $has_term ) {
-						//					continue;
-						//				}
+						// Post associated with term
+						if ( true === $has_term ) {
 
-						// @todo add uncurating action
-
-						// Already curated
-						if ( ! empty( $has_term ) && ! is_wp_error( $has_term ) ) {
-
-							// No change
-							if ( isset( $_POST[ $term ] ) ) {
+							// Post associated with term; no change
+							if ( isset( $_POST[ $term ] ) && 'on' === $_POST[ $curate_term ] ) {
 								return;
-							} else if ( empty( $_POST[ $term ] ) ) {
+							}
+
+							// Post associated with term; remove term association
+							else if ( ! isset( $_POST[ $term ] ) ) {
 								$set_modules[ $module ] = 'remove';
 							}
-						} else {
+						}
 
-							// Not currently curated
-							if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+						// Post not associated with term
+						else {
+
+							// Post not associated with term; add term association
+							if ( isset( $_POST[ $term ] ) && 'on' === $_POST[ $term ] ) {
 								$set_modules[ $module ] = 'add';
 							}
 						}
 					}
 				}
 
+				// We have a change to make
 				if ( ! empty( $set_modules ) ) {
-					cur_set_item_modules( $post_id, $post, $modules, $set_modules );
+					cur_set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post );
 				}
 			}
 		}

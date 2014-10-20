@@ -99,7 +99,7 @@ class CUR_Curator extends CUR_Singleton {
 		return self::$modules;
 	}
 
-	private function curate_post( $post_id, $post ) {
+	public function curate_post( $post_id, $post ) {
 
 		// Create a post and add in as meta the original post's ID
 		// @todo Get top ordered posts and place on top (via menu_order)
@@ -128,25 +128,25 @@ class CUR_Curator extends CUR_Singleton {
 			'comment_status' => 'closed',
 		);
 
-		$inserted_cur_post = wp_insert_post( $new_post_args );
+		$curated_post = wp_insert_post( $new_post_args );
 
-		if ( $inserted_cur_post && ! is_wp_error( $inserted_cur_post ) ) {
+		if ( $curated_post && ! is_wp_error( $curated_post ) ) {
 
 			// Add our related post ID to the curator post meta
-			update_post_meta( $inserted_cur_post, $this->curated_meta_slug, $post_id );
+			update_post_meta( $curated_post, $this->curated_meta_slug, $post_id );
 
 			// Add our curator post id to the original post
-			update_post_meta( $post_id, $this->curated_meta_slug, $inserted_cur_post );
+			update_post_meta( $post_id, $this->curated_meta_slug, $curated_post );
 
-			wp_add_object_terms( $post_id, cur_get_module_term( 'curator' ), cur_get_tax_slug() );
+			wp_add_object_terms( $curated_post, cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
-			return $inserted_cur_post;
+			return $curated_post;
 		}
 
 		return false;
 	}
 
-	public function set_item_modules( $post_id, $post, $modules, $set_modules ) {
+	public function set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post ) {
 
 		// Get a simple array of already associated terms in the format of: array( (int) $term_id => (string) $slug ) )
 		$associated_terms = $prev_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
@@ -167,6 +167,8 @@ class CUR_Curator extends CUR_Singleton {
 
 		// If there's been a change, overwrite all old terms with our new list
 		if ( $associated_terms !== $prev_terms ) {
+
+			// Set terms to curated post object
 			wp_set_object_terms( $curated_post, array_keys( $associated_terms ), cur_get_tax_slug() );
 		}
 	}
@@ -179,7 +181,13 @@ class CUR_Curator extends CUR_Singleton {
 	 * @return mixed
 	 */
 	public function get_related_id( $post_id ) {
-		return get_post_meta( $post_id, $this->curated_meta_slug, true );
+		$id = intval( get_post_meta( $post_id, $this->curated_meta_slug, true ) );
+
+		if ( is_int( $id ) && 0 !== $id ) {
+			return $id;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -261,10 +269,14 @@ function cur_get_module_term( $module ) {
 	return CUR_Curator::factory()->get_module_term( $module );
 }
 
-function cur_set_item_modules( $post_id, $post, $modules, $set_modules ) {
-	return CUR_Curator::factory()->set_item_modules( $post_id, $post, $modules, $set_modules );
+function cur_set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post ) {
+	return CUR_Curator::factory()->set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post );
 }
 
 function cur_uncurate_item( $post_id ) {
 	return CUR_Curator::factory()->uncurate_item( $post_id );
+}
+
+function cur_curate_post( $post_id, $post ) {
+	return CUR_Curator::factory()->curate_post( $post_id, $post );
 }
