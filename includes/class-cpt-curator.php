@@ -54,11 +54,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
 
 			// Get the ID of the main item, and then use the same removal/disconnect method
-			cur_remove_curated_item( cur_get_related_id( $post_id ) );
+			cur_uncurate_item( cur_get_related_id( $post_id ) );
 		} else if ( in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 
 			// Deleting the main item, let's remove the attached curated item
-			cur_remove_curated_item( $post_id );
+			cur_uncurate_item( $post_id );
 		}
 
 	}
@@ -131,9 +131,6 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			return;
 		}
 
-		$modules = cur_get_modules();
-
-
 		// Check nonce set
 		if ( ! isset( $_POST['cur_curate_item_nonce'] ) ) {
 			return;
@@ -144,29 +141,87 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			return;
 		}
 
-		// is it already curated?
-		$curate_term = cur_get_module_term( 'curator' );
-		$is_curated = has_term( $curate_term, cur_get_tax_slug() );
+		$modules = cur_get_modules();
 
-		// @todo allow setting all terms here, not just one
-		// Already curated
-		if ( ! empty( $is_curated ) && ! is_wp_error( $is_curated ) ) {
+		/**
+		 * Curate/Uncurate item logic
+		 * Run before anything else
+		 */
+		if ( ! empty( $modules['curator'] ) && $modules['curator']['enabled'] && true === $modules['curator'] ) {
+			$curated_post = false;
+			$curate_term = cur_get_module_term( 'curator' );
+			$is_curated = has_term( cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
-			// No change
-			if ( isset( $_POST['curate_item'] ) ) {
-				return;
-			} else if ( empty( $_POST['curate_item'] ) ) {
+			// This post is not curated
+			if ( false === $is_curated ) {
 
-				// Remove curation for this item!
-				cur_remove_curated_item( $post_id );
+				// This post is not curated; we wish to curate it
+				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+					$curated_post = $this->curate_post( $post_id, $post );
+				}
 			}
-		} else {
 
-			// Not currently curated
-			if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+			// This post is curated
+			else {
 
-				// Start curation for this item!
-				cur_create_curated_item( $post_id, $post );
+				// This post is curated; we don't want to uncurate it. Grab the curated post id
+				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+					$curated_post = $this->get_related_id( $post_id );
+				}
+
+				// This post is curated and we want to uncurate it
+				else {
+					cur_uncurate_item( $post_id );
+				}
+			}
+
+			// Only run other modules if this post has been curated
+			if ( false !== $curated_post ) {
+				
+				/**
+				 * Run through and set/unset our other modules
+				 */
+				foreach ( $modules as $module => $module_info ) {
+					if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] && ! empty( $module_info['slug'] ) ) {
+
+						// Skip the curator module, already handled that logic above
+						if ( 'curator' === $module['slug'] ) {
+							continue;
+						}
+
+						$term = cur_get_module_term( $module['slug'] );
+
+						$has_term = has_term( $term, cur_get_tax_slug() );
+
+						// Only show the other modules if this item is curated
+						//				if ( 'curator' !== $module || ! $has_term ) {
+						//					continue;
+						//				}
+
+						// @todo add uncurating action
+
+						// Already curated
+						if ( ! empty( $has_term ) && ! is_wp_error( $has_term ) ) {
+
+							// No change
+							if ( isset( $_POST[ $term ] ) ) {
+								return;
+							} else if ( empty( $_POST[ $term ] ) ) {
+								$set_modules[ $module ] = 'remove';
+							}
+						} else {
+
+							// Not currently curated
+							if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+								$set_modules[ $module ] = 'add';
+							}
+						}
+					}
+				}
+
+				if ( ! empty( $set_modules ) ) {
+					cur_set_item_modules( $post_id, $post, $modules, $set_modules );
+				}
 			}
 		}
 	}

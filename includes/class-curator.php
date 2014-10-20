@@ -99,17 +99,7 @@ class CUR_Curator extends CUR_Singleton {
 		return self::$modules;
 	}
 
-	/**
-	 * This item should be curated
-	 *
-	 * @param $post_id
-	 * @param $post
-	 *
-	 * @return bool
-	 * @since 0.1.0
-	 */
-	public function create_curated_item( $post_id, $post, $terms ) {
-		$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
+	private function curate_post( $post_id, $post ) {
 
 		// Create a post and add in as meta the original post's ID
 		// @todo Get top ordered posts and place on top (via menu_order)
@@ -142,43 +132,43 @@ class CUR_Curator extends CUR_Singleton {
 
 		if ( $inserted_cur_post && ! is_wp_error( $inserted_cur_post ) ) {
 
-			// Set the term in the original post item
-			// @todo need to set all terms here as 2nd param, not just our curate_term
-			wp_set_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );
-
 			// Add our related post ID to the curator post meta
 			update_post_meta( $inserted_cur_post, $this->curated_meta_slug, $post_id );
 
 			// Add our curator post id to the original post
 			update_post_meta( $post_id, $this->curated_meta_slug, $inserted_cur_post );
 
-			return true;
+			wp_add_object_terms( $post_id, cur_get_module_term( 'curator' ), cur_get_tax_slug() );
+
+			return $inserted_cur_post;
 		}
 
 		return false;
 	}
 
-	/**
-	 * Item is no longer curated, remove it
-	 *
-	 * @param $post_id
-	 * @param $post
-	 *
-	 * @since 0.1.0
-	 */
-	public function remove_curated_item( $post_id ) {
-		$curate_term = cur_get_curate_term();
+	public function set_item_modules( $post_id, $post, $modules, $set_modules ) {
 
-		$curated_id = get_post_meta( $post_id, $this->curated_meta_slug, true );
+		// Get a simple array of already associated terms in the format of: array( (int) $term_id => (string) $slug ) )
+		$associated_terms = $prev_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
-		// Unset the curation term of the main post
-		wp_remove_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );
+		foreach ( $set_modules as $module => $action ) {
+			$term = get_term_by( 'slug', cur_get_module_term( $module ), cur_get_tax_slug() );
 
-		// Remove the associated meta of the curated post ID
-		delete_post_meta( $post_id, $this->curated_meta_slug );
+			if ( false === $term || is_wp_error( $term ) ) {
+				continue;
+			}
 
-		// Finally, delete the curation post entirely
-		wp_delete_post( $curated_id, true );
+			if ( 'add' === $action ) {
+				$associated_terms[ $term->term_id ] = $term->slug;
+			} else if ( 'remove' === $action ) {
+				unset( $associated_terms[ $term->term_id ] );
+			}
+		}
+
+		// If there's been a change, overwrite all old terms with our new list
+		if ( $associated_terms !== $prev_terms ) {
+			wp_set_object_terms( $curated_post, array_keys( $associated_terms ), cur_get_tax_slug() );
+		}
 	}
 
 	/**
@@ -221,6 +211,28 @@ class CUR_Curator extends CUR_Singleton {
 
 		return $term;
 	}
+
+	/**
+	 * Remove curation status from item
+	 *
+	 * @param $post_id
+	 */
+	public function uncurate_item( $post_id ) {
+
+		// Remove item module
+		$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
+
+		$curated_id = get_post_meta( $post_id, $this->curated_meta_slug, true );
+
+		// Unset the curation term of the main post
+		wp_remove_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );
+
+		// Remove the associated meta of the curated post ID
+		delete_post_meta( $post_id, $this->curated_meta_slug );
+
+		// Finally, delete the curation post entirely
+		wp_delete_post( $curated_id, true );
+	}
 }
 
 CUR_Curator::factory()->setup();
@@ -231,14 +243,6 @@ CUR_Curator::factory()->setup();
 
 function cur_get_post_types() {
 	return CUR_Curator::factory()->get_post_types();
-}
-
-function cur_remove_curated_item( $post_id ) {
-	return CUR_Curator::factory()->remove_curated_item( $post_id );
-}
-
-function cur_create_curated_item( $post_id, $post ) {
-	return CUR_Curator::factory()->create_curated_item( $post_id, $post );
 }
 
 function cur_get_related_id( $post_id ) {
@@ -255,4 +259,12 @@ function cur_is_module_enabled( $module ) {
 
 function cur_get_module_term( $module ) {
 	return CUR_Curator::factory()->get_module_term( $module );
+}
+
+function cur_set_item_modules( $post_id, $post, $modules, $set_modules ) {
+	return CUR_Curator::factory()->set_item_modules( $post_id, $post, $modules, $set_modules );
+}
+
+function cur_uncurate_item( $post_id ) {
+	return CUR_Curator::factory()->uncurate_item( $post_id );
 }
