@@ -297,7 +297,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			'capability_type'     => 'post',
 			'has_archive'         => true,
 			'hierarchical'        => false,
-			'menu_position'       => 50,
+			'menu_position'       => 3,
 			'rewrite'             => array( 'slug' => $this->cpt_url_slug ),
 			'exclude_from_search' => true,
 			'supports'            => array(
