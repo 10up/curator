@@ -15,7 +15,16 @@ body.post-type-cur-curator {
 		.wp-menu-image.dashicons-star-filled {
 			&:before {
 				color: #F5C24F;
+				font-size: 28px;
 			}
 		}
+	}
+
+	th.manage-column.column-post_type {
+		width: 15%;
+	}
+
+	th.manage-column.column-featured {
+		width: 10%;
 	}
 }

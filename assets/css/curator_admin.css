@@ -8,4 +8,9 @@
 body.post-type-cur-curator a.add-new-h2 {
   display: none; }
 body.post-type-cur-curator .featured.column-featured .wp-menu-image.dashicons-star-filled:before {
-  color: #F5C24F; }
+  color: #F5C24F;
+  font-size: 28px; }
+body.post-type-cur-curator th.manage-column.column-post_type {
+  width: 15%; }
+body.post-type-cur-curator th.manage-column.column-featured {
+  width: 10%; }
