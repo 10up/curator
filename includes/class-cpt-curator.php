@@ -43,6 +43,12 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 		// Modify the page row actions in admin
 		add_filter( 'page_row_actions', array( $this, 'filter_page_row_actions' ), 10, 2 );
+
+		// Add custom columns to show the origin post type and featured status
+		add_filter( 'manage_' . $this->cpt_slug . '_posts_columns', array( $this, 'manage_columns' ) );
+
+		// Display our custom columns
+		add_action( 'manage_' . $this->cpt_slug . '_posts_custom_column', array( $this, 'display_custom_columns' ), 10, 2 );
 	}
 
 	/**
@@ -290,7 +296,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			'menu_icon'           => $menu_icon,
 			'capability_type'     => 'post',
 			'has_archive'         => true,
-			'hierarchical'        => true,
+			'hierarchical'        => false,
 			'menu_position'       => 50,
 			'rewrite'             => array( 'slug' => $this->cpt_url_slug ),
 			'exclude_from_search' => true,
@@ -341,6 +347,74 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 
 		return $actions;
+	}
+
+	/**
+	 * Add custom columns to curator post type.
+	 * Featured Column (shows which posts should be weighted with more prominence)
+	 * Post Type (Shows origin post type)
+	 *
+	 * @param $columns
+	 *
+	 * @return array
+	 */
+	public function manage_columns( $columns ) {
+		$new_columns = array(
+			'featured' => __( 'Featured', 'fpb' ),
+			'post_type' => __( 'Post Type', 'fpb' ),
+		);
+
+		$count = 0;
+		if ( ! empty( $columns['cb'] ) ) {
+			$count++;
+		}
+		if ( ! empty( $columns['title'] ) ) {
+			$count++;
+		}
+
+		// Insert our columns directly after the title - all other columns should be forced after these columns
+		$columns = array_slice( $columns, 0, $count, true ) +
+		           $new_columns +
+		           array_slice( $columns, $count, count( $columns ) - $count, true );
+
+		return $columns;
+	}
+
+	/**
+	 * Display for our custom columns
+	 *
+	 * @param $column
+	 * @param $post_id
+	 */
+	public function display_custom_columns( $column, $post_id ) {
+		$modules = cur_get_modules();
+
+		switch( $column ) {
+			case 'featured':
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $post_id, cur_get_tax_slug() ), 'slug', 'term_id' );
+
+				$term = get_term_by( 'slug', $modules['featurer']['slug'], cur_get_tax_slug() );
+
+				if ( ! empty( $associated_terms[ $term->term_id ] ) ) {
+					$featured = true;
+				} else {
+					$featured = false;
+				}
+
+				if ( true === $featured ) {
+					echo '<div class="wp-menu-image dashicons-before dashicons-star-filled cur-curator-featured-item"><br></div>';
+				}
+
+
+				break;
+			case 'post_type';
+				$post_type = get_post_type( cur_get_related_id( $post_id ) );
+				$post_type_obj = get_post_type_object( $post_type );
+
+				echo esc_html( $post_type_obj->labels->singular_name );
+
+				break;
+		}
 	}
 }
 

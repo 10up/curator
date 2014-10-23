@@ -7,3 +7,5 @@
  */
 body.post-type-cur-curator a.add-new-h2 {
   display: none; }
+body.post-type-cur-curator .featured.column-featured .wp-menu-image.dashicons-star-filled:before {
+  color: #F5C24F; }
