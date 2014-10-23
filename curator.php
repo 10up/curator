@@ -4,7 +4,7 @@
  * Plugin URI:  http://10up.com
  * Description: Select specific posts from across multiple post types to combine together and control the ordering.
  * Version:     0.1.0
- * Author:      Aaron Holbrook, Gustave Gerhardt, 10up
+ * Author:      Aaron Holbrook, 10up
  * Author URI:  http://10up.com
  * License:     GPLv2+
  * Text Domain: cur

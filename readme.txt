@@ -1,5 +1,5 @@
 === Curator ===
-Contributors:      10up
+Contributors:      aaronholbrook, 10up
 Tags:
 Requires at least: 3.5.1
 Tested up to:      3.5.1
