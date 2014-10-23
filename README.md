@@ -47,11 +47,11 @@ add_filter( 'cur_modules', function( $modules ) {
 
 When editing a curate-able post, you will see the option to 'Curate Item' in the publish box. To curate an item, simply check that box and it will be curated after saving of the current post.
 
-<screenshot>
+![The control for curating items lives in the Publish box of posts](/screenshots/publish-box.png?raw=true "The control for curating items lives in the Publish box of posts")
 
 To manage the order of the curated items, click on the ```Curator``` menu icon:
 
-<screenshot>
+![The Curator menu item lives below the Dashboard menu item](/screenshots/curator-menu-item.png?raw=true "Curator Menu Item sits below the Dashboard")
 
 To re-arrange items, ensure that you have already installed the [Simple Page Ordering](https://wordpress.org/plugins/simple-page-ordering/) plugin and simply drag and drop items.
 
