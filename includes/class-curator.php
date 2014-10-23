@@ -59,6 +59,9 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Set the filters to fire during `wp_loaded`
 		add_action( 'wp_loaded', array( $this, 'filter_settings' ) );
+
+		// Replace the Curator query items with their original items
+		add_filter( 'the_posts', array( $this, 'filter_the_posts' ), 10, 2 );
 	}
 
 	/**
@@ -99,6 +102,14 @@ class CUR_Curator extends CUR_Singleton {
 		return self::$modules;
 	}
 
+	/**
+	 * Curates a post
+	 *
+	 * @param $post_id
+	 * @param $post
+	 *
+	 * @return bool|int|WP_Error
+	 */
 	public function curate_post( $post_id, $post ) {
 
 		// Create a post and add in as meta the original post's ID
@@ -146,6 +157,15 @@ class CUR_Curator extends CUR_Singleton {
 		return false;
 	}
 
+	/**
+	 * Sets the modules for each item
+	 *
+	 * @param $post_id
+	 * @param $post
+	 * @param $modules
+	 * @param $set_modules
+	 * @param $curated_post
+	 */
 	public function set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post ) {
 
 		// Get a simple array of already associated terms in the format of: array( (int) $term_id => (string) $slug ) )
@@ -240,6 +260,38 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Finally, delete the curation post entirely
 		wp_delete_post( $curated_id, true );
+	}
+
+	/**
+	 * Makes the loop experience seamless by replacing all curator items with their original posts.
+	 *
+	 * Tada!
+	 *
+	 * @param $posts
+	 * @param $query
+	 *
+	 * @return mixed
+	 * @since 0.1.0
+	 */
+	public function filter_the_posts( $posts, $query ) {
+
+		// Ensure that we are only filtering for curator queries
+		if ( ! empty( $query->query['post_type'] )
+		     && ! is_array( $query->query['post_type'] )
+		     && cur_get_cpt_slug() === $query->query['post_type']
+		) {
+
+			// Replace the posts we found with their origins
+			if ( ! empty( $posts ) ) {
+
+				// Do for each post that was found
+				foreach ( $posts as $key => $post ) {
+					$posts[ $key ] = get_post( cur_get_related_id( $post->ID ) );
+				}
+			}
+		}
+
+		return $posts;
 	}
 }
 
