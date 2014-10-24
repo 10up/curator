@@ -236,14 +236,18 @@ class CUR_Curator extends CUR_Singleton {
 		$pinned_items = get_option( $option_slug );
 		if ( empty( $pinned_items ) ) {
 			$pinned_items = array();
-		} else if ( count( $pinned_items ) > $max_items ) {
-			$unpin_items = array_splice( $pinned_items, $max_items - 1, count( $pinned_items ) - $max_items );
-			foreach ( (array) $unpin_items as $unpin_item ) {
-				$this->unpin_item( $unpin_item );
-			}
 		}
 
+		// Add our new item onto the top of the pinned stack
 		array_unshift( $pinned_items, $curated_id );
+
+		// If we're over the max items allotted, unpin the overage items
+		if ( count( $pinned_items ) > $max_items ) {
+			$unpin_items = array_splice( $pinned_items, $max_items, 1 );
+			foreach ( (array) $unpin_items as $unpin_item ) {
+				$this->unpin_item( $unpin_item, $pinned_items );
+			}
+		}
 
 		// Update the pinned items with our new item in front
 		update_option( $option_slug, $pinned_items );
@@ -258,27 +262,33 @@ class CUR_Curator extends CUR_Singleton {
 	 *
 	 * @param $curated_id
 	 */
-	public function unpin_item( $curated_id ) {
-
+	public function unpin_item( $curated_id, $pinned_items = null ) {
 		// Ensure our pinner module is enabled
 		if ( true !== cur_is_module_enabled( 'pinner' ) ) {
 			return;
 		}
 
-		$pinned_items = get_option( cur_get_pinner_option_slug() );
+		if ( null === $pinned_items ) {
+			$pinned_items = get_option( cur_get_pinner_option_slug() );
+		}
+
 		if ( empty( $pinned_items ) ) {
-			return;
+			$pinned_items = array();
 		}
 
 		// Find our item's current position
-		// @todo only remove one element at a time?
 		$position = array_search( (int) $curated_id, $pinned_items );
 
 		// Remove this item from the pinned items array
-		unset( $pinned_items[ $position ] );
+		if ( false !== $position ) {
+			unset( $pinned_items[ $position ] );
 
-		// Update the pinned items array
-		update_option( cur_get_pinner_option_slug(), $pinned_items );
+			// Update the pinned items array
+			update_option( cur_get_pinner_option_slug(), $pinned_items );
+		}
+
+		// Unassociate pinner term from curate post
+		wp_remove_object_terms( $curated_id, cur_get_module_term( 'pinner' ), cur_get_tax_slug() );
 	}
 
 	/**
@@ -295,6 +305,22 @@ class CUR_Curator extends CUR_Singleton {
 			return $id;
 		} else {
 			return false;
+		}
+	}
+
+	/**
+	 * Returns only the curator post type ID. Will determine what post type you're passing.
+	 *
+	 * @param $post_id
+	 *
+	 * @return mixed
+	 */
+	public function get_curated_post( $post_id ) {
+		// check to see if curator post type, if not then get the curator post type
+		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
+			return $post_id;
+		} else {
+			return $this->get_related_id( $post_id );
 		}
 	}
 
@@ -508,4 +534,8 @@ function cur_unpin_item( $curated_id ) {
 
 function cur_get_pinner_max_items() {
 	return CUR_Curator::factory()->get_pinner_max_items();
+}
+
+function cur_get_curated_post( $post_id ) {
+	return CUR_Curator::factory()->get_curated_post ( $post_id );
 }

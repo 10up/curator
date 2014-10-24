@@ -44,11 +44,30 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		// Modify the page row actions in admin
 		add_filter( 'page_row_actions', array( $this, 'filter_page_row_actions' ), 10, 2 );
 
+		add_action( 'admin_head', array( $this, 'admin_head' ) );
+	}
+
+	public function admin_head() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( 'edit-cur-curator' !== $screen->id ) {
+			return;
+		}
+
 		// Add custom columns to show the origin post type and featured status
 		add_filter( 'manage_' . $this->cpt_slug . '_posts_columns', array( $this, 'manage_columns' ) );
 
-		// Display our custom columns
-		add_action( 'manage_' . $this->cpt_slug . '_posts_custom_column', array( $this, 'display_custom_columns' ), 10, 2 );
+		// Display our custom columns (need to add for each post type, as these posts are actually the original post
+		add_action( 'manage_pages_custom_column', array( $this, 'display_custom_columns' ), 10, 2 );
+		add_action( 'manage_posts_custom_column', array( $this, 'display_custom_columns' ), 10, 2 );
+
+		$post_types = cur_get_post_types();
+		foreach ( $post_types as $type ) {
+			add_action( 'manage_' . $type . '_posts_columns', array( $this, 'display_custom_columns' ), 10, 2 );
+		}
 	}
 
 	/**
@@ -304,7 +323,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			'menu_icon'           => $menu_icon,
 			'capability_type'     => 'post',
 			'has_archive'         => true,
-			'hierarchical'        => false,
+			'hierarchical'        => true,
 			'menu_position'       => 3,
 			'rewrite'             => array( 'slug' => $this->cpt_url_slug ),
 			'exclude_from_search' => true,
@@ -368,7 +387,8 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */
 	public function manage_columns( $columns ) {
 		$new_columns = array(
-			'featured' => __( 'Featured', 'fpb' ),
+			'pinned'    => __( 'Pinned', 'fpb' ),
+			'featured'  => __( 'Featured', 'fpb' ),
 			'post_type' => __( 'Post Type', 'fpb' ),
 		);
 
@@ -397,9 +417,27 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	public function display_custom_columns( $column, $post_id ) {
 		$modules = cur_get_modules();
 
+		$curated_post = cur_get_curated_post( $post_id );
+
 		switch( $column ) {
+			case 'pinned':
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+
+				$term = get_term_by( 'slug', $modules['pinner']['slug'], cur_get_tax_slug() );
+
+				if ( ! empty( $associated_terms[ $term->term_id ] ) ) {
+					$pinned = true;
+				} else {
+					$pinned = false;
+				}
+
+				if ( true === $pinned ) {
+					echo '<div class="wp-menu-image dashicons-before dashicons-admin-post cur-curator-featured-item"><br></div>';
+				}
+
+				break;
 			case 'featured':
-				$associated_terms = wp_list_pluck( wp_get_object_terms( $post_id, cur_get_tax_slug() ), 'slug', 'term_id' );
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
 				$term = get_term_by( 'slug', $modules['featurer']['slug'], cur_get_tax_slug() );
 
@@ -413,10 +451,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 					echo '<div class="wp-menu-image dashicons-before dashicons-star-filled cur-curator-featured-item"><br></div>';
 				}
 
-
 				break;
 			case 'post_type';
-				$post_type = get_post_type( cur_get_related_id( $post_id ) );
+				$post_type = get_post_type( cur_get_related_id( $curated_post ) );
 				$post_type_obj = get_post_type_object( $post_type );
 
 				echo esc_html( $post_type_obj->labels->singular_name );

@@ -57,7 +57,7 @@ To manage the order of the curated items, click on the ```Curator``` menu icon:
 
 To re-arrange items, ensure that you have already installed the [Simple Page Ordering](https://wordpress.org/plugins/simple-page-ordering/) plugin and simply drag and drop items.
 
-<screenshot>
+![Curated items, ready for ordering](/screenshots/curated-item-list.png?raw=true "List of curated items")
 
 ### Uncurating
 

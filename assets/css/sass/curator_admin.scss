@@ -20,11 +20,15 @@ body.post-type-cur-curator {
 		}
 	}
 
-	th.manage-column.column-post_type {
-		width: 15%;
+	th.manage-column.column-pinned {
+		width: 10%;
 	}
 
 	th.manage-column.column-featured {
 		width: 10%;
+	}
+
+	th.manage-column.column-post_type {
+		width: 15%;
 	}
 }
