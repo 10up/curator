@@ -3,7 +3,7 @@ Curator
 
 Select specific posts from across multiple post types to combine together and control the ordering.
 
-* **Latest Stable**: [v0.2](https://github.com/AaronHolbrook/Curator/releases/tag/v1.0)
+* **Latest Stable**: [v0.2](https://github.com/AaronHolbrook/curator)
 * **Contributors**: [@aaronholbrook](https://github.com/AaronHolbrook), [@ghosttoast](https://github.com/ghosttoast)
 
 ## Background & Purpose
