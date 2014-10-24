@@ -271,6 +271,7 @@ class CUR_Curator extends CUR_Singleton {
 		}
 
 		// Find our item's current position
+		// @todo only remove one element at a time?
 		$position = array_search( (int) $curated_id, $pinned_items );
 
 		// Remove this item from the pinned items array
