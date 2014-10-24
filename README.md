@@ -3,6 +3,9 @@ Curator
 
 Select specific posts from across multiple post types to combine together and control the ordering.
 
+* **Latest Stable**: [v0.1](https://github.com/AaronHolbrook/Curator/releases/tag/v1.0)
+* **Contributors**: [@aaronholbrook](https://github.com/AaronHolbrook), [@ghosttoast](https://github.com/ghosttoast)
+
 ## Background & Purpose
 
 If you've ever needed to create a query that pulls in multiple post types, posts and post formats but still allow for the control of the order of those items, you'll find WordPress falls a bit short.

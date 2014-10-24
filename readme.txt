@@ -1,9 +1,9 @@
 === Curator ===
-Contributors:      aaronholbrook, 10up
-Tags:
+Contributors:      aaronholbrook, ghosttoast, 10up
+Tags:              curation, query, cpt, custom post types, order, sort
 Requires at least: 3.5.1
-Tested up to:      3.5.1
-Stable tag:        0.1.0
+Tested up to:      4.1-alpha
+Stable tag:        0.2.0
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,7 +11,9 @@ Select specific posts from across multiple post types to combine together and co
 
 == Description ==
 
+If you've ever needed to create a query that pulls in multiple post types, posts and post formats but still allow for the control of the order of those items, you'll find WordPress falls a bit short.
 
+Curator let's you specify which post types should be curated and then provides an interface for ordering those.
 
 == Installation ==
 
