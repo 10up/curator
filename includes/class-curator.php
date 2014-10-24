@@ -52,6 +52,7 @@ class CUR_Curator extends CUR_Singleton {
 			),
 			'pinner'   => array(
 				'slug'    => 'cur-pinned-item',
+				'option'  => 'curator-pinned-items',
 				'enabled' => false,
 				'label'   => __( 'Pin Item', 'cur' ),
 			),
@@ -100,6 +101,15 @@ class CUR_Curator extends CUR_Singleton {
 	 */
 	public function get_modules() {
 		return self::$modules;
+	}
+
+	/**
+	 * Getter for retrieving the option name for the pinner
+	 *
+	 * @return mixed
+	 */
+	public function get_pinner_option_slug() {
+		return self::$modules['pinner']['option'];
 	}
 
 	/**
@@ -180,8 +190,38 @@ class CUR_Curator extends CUR_Singleton {
 
 			if ( 'add' === $action ) {
 				$associated_terms[ $term->term_id ] = $term->slug;
+
+				// If pinner module, add to pinner array
+				if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
+					$pinned_items = get_option( cur_get_pinner_option_slug() );
+					if ( empty( $pinned_items ) ) {
+						$pinned_items = array();
+					}
+
+					array_unshift( $pinned_items, $curated_post );
+
+					// Update the pinned items with our new item in front
+					update_option( cur_get_pinner_option_slug(), $pinned_items );
+				}
 			} else if ( 'remove' === $action ) {
 				unset( $associated_terms[ $term->term_id ] );
+
+				// If pinner module, remove from pinned items array
+				if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
+					$pinned_items = get_option( cur_get_pinner_option_slug() );
+					if ( empty( $pinned_items ) ) {
+						continue;
+					}
+
+					// Find our item's current position
+					$position = array_search( (int) $curated_post, $pinned_items );
+
+					// Remove this item from the pinned items array
+					unset( $pinned_items[ $position ] );
+
+					// Update the pinned items array
+					update_option( cur_get_pinner_option_slug(), $pinned_items );
+				}
 			}
 		}
 
@@ -190,6 +230,10 @@ class CUR_Curator extends CUR_Singleton {
 
 			// Set terms to curated post object
 			wp_set_object_terms( $curated_post, array_keys( $associated_terms ), cur_get_tax_slug() );
+
+			// Pinner module requires us to do something special. We're going to store the pinned items into the options table
+			// As a key->value of curatedCPT->originCPT ids.
+
 		}
 	}
 
@@ -222,7 +266,7 @@ class CUR_Curator extends CUR_Singleton {
 
 		$modules = $this->get_modules();
 
-		if ( ! empty( $modules[ $module ] ) && true === $modules[ $module ] ) {
+		if ( ! empty( $modules[ $module ] ) && true === $modules[ $module ]['enabled'] ) {
 			$is_enabled = true;
 		}
 
@@ -331,4 +375,8 @@ function cur_uncurate_item( $post_id ) {
 
 function cur_curate_post( $post_id, $post ) {
 	return CUR_Curator::factory()->curate_post( $post_id, $post );
+}
+
+function cur_get_pinner_option_slug() {
+	return CUR_Curator::factory()->get_pinner_option_slug();
 }

@@ -186,6 +186,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 			// Only run other modules if this post has been curated
 			if ( false !== $curated_post ) {
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
 				/**
 				 * Run through and set/unset our other modules
@@ -198,32 +199,29 @@ class CUR_CPT_Curator extends CUR_Singleton {
 							continue;
 						}
 
-						// Get term slug
-						$term = cur_get_module_term( $module );
+						// Get term object
+						$term = get_term_by( 'slug', $module_info['slug'], cur_get_tax_slug() );
 
-						// See if term is currently associated with post
-						$has_term = has_term( $term, cur_get_tax_slug() );
+						if ( ! empty( $term->slug ) ) {
+							$term_slug = $term->slug;
 
-						// Post associated with term
-						if ( true === $has_term ) {
+							// See if term is currently associated with post
+							if ( ! empty( $associated_terms[ $term->term_id ] ) && $module_info['slug'] === $term_slug ) {
 
-							// Post associated with term; no change
-							if ( isset( $_POST[ $term ] ) && 'on' === $_POST[ $curate_term ] ) {
-								return;
-							}
+								// Post associated with term; no change
+								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
+									continue;
+								} // Post associated with term; remove term association
+								else if ( ! isset( $_POST[ $term_slug ] ) ) {
+									$set_modules[ $module ] = 'remove';
+								}
+							} // Post not associated with term
+							else {
 
-							// Post associated with term; remove term association
-							else if ( ! isset( $_POST[ $term ] ) ) {
-								$set_modules[ $module ] = 'remove';
-							}
-						}
-
-						// Post not associated with term
-						else {
-
-							// Post not associated with term; add term association
-							if ( isset( $_POST[ $term ] ) && 'on' === $_POST[ $term ] ) {
-								$set_modules[ $module ] = 'add';
+								// Post not associated with term; add term association
+								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
+									$set_modules[ $module ] = 'add';
+								}
 							}
 						}
 					}
