@@ -357,6 +357,7 @@ class CUR_Curator extends CUR_Singleton {
 	/**
 	 * Remove curation status from item
 	 *
+	 * @todo do more intelligent checking regardless of which post type id is passed
 	 * @param $post_id
 	 */
 	public function uncurate_item( $post_id ) {
@@ -364,7 +365,7 @@ class CUR_Curator extends CUR_Singleton {
 		// Remove item module
 		$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
-		$curated_id = cur_get_related_id( $post_id );
+		$curated_id = cur_get_curated_post( $post_id );
 
 		// Unset the curation term of the main post
 		wp_remove_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );

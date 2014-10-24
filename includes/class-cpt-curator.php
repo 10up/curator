@@ -29,7 +29,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
 
+		// Save terms/meta on save_post
 		add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
+
+		// Uncurate items on unpublish
+		add_action( 'transition_post_status', array( $this, 'transition_post_status' ), 10, 3 );
 
 		add_action( 'admin_menu', array( $this, 'remove_add_new_menu' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue' ) );
@@ -99,6 +103,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	public function post_submitbox_misc_actions() {
 		global $post;
 
+		// Only show curator if this post is published
+		if ( ! empty( $post->post_status ) && 'publish' !== $post->post_status ) {
+			return;
+		}
+
 		// Is the curator enabled for this post type?
 		if ( ! in_array( get_post_type( $post ), cur_get_post_types() ) ) {
 			return;
@@ -147,6 +156,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	public function save_post( $post_id, $post ) {
 		// Is the curator enabled for this post type?
 		if ( ! in_array( $post->post_type, cur_get_post_types() ) ) {
+			return;
+		}
+
+		// Hah! Nice try - nope, no curating unpublished items
+		if ( 'publish' !== $post->post_status ) {
 			return;
 		}
 
@@ -260,6 +274,18 @@ class CUR_CPT_Curator extends CUR_Singleton {
 				if ( ! empty( $set_modules ) ) {
 					cur_set_item_modules( $set_modules, $curated_post );
 				}
+			}
+		}
+	}
+
+	public function transition_post_status( $new_status, $old_status, $post ) {
+		if ( $old_status === 'publish' && $new_status !== 'publish' ) {
+			$curated_post = cur_get_curated_post( $post->ID );
+
+			if ( false !== $curated_post && is_int( $curated_post ) ) {
+
+				// Found a curated post, let's uncurate it
+				cur_uncurate_item( $post->ID );
 			}
 		}
 	}
