@@ -61,8 +61,11 @@ class CUR_Curator extends CUR_Singleton {
 		// Set the filters to fire during `wp_loaded`
 		add_action( 'wp_loaded', array( $this, 'filter_settings' ) );
 
+		// Inject sticky posts if pinner is enabled
+		add_filter( 'the_posts', array( $this, 'filter_sticky_posts' ), 20, 2 );
+
 		// Replace the Curator query items with their original items
-		add_filter( 'the_posts', array( $this, 'filter_the_posts' ), 10, 2 );
+		add_filter( 'the_posts', array( $this, 'filter_the_posts' ), 900, 2 );
 	}
 
 	/**
@@ -230,10 +233,6 @@ class CUR_Curator extends CUR_Singleton {
 
 			// Set terms to curated post object
 			wp_set_object_terms( $curated_post, array_keys( $associated_terms ), cur_get_tax_slug() );
-
-			// Pinner module requires us to do something special. We're going to store the pinned items into the options table
-			// As a key->value of curatedCPT->originCPT ids.
-
 		}
 	}
 
@@ -304,6 +303,79 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Finally, delete the curation post entirely
 		wp_delete_post( $curated_id, true );
+	}
+
+	/**
+	 * Using WP_Query sticky post logic here for our custom post type.
+	 * Takes sticky posts and moves them to the top of the query
+	 *
+	 * @param $posts
+	 * @param $query
+	 *
+	 * @return mixed
+	 */
+	public function filter_sticky_posts( $posts, $query ) {
+
+		// Ensure that we are only filtering for curator queries
+		if ( ! empty( $query->query['post_type'] )
+		     && ! is_array( $query->query['post_type'] )
+		     && cur_get_cpt_slug() === $query->query['post_type']
+		) {
+			$q    = $query->query_vars;
+			$page = 1;
+
+			// Paging
+			if ( empty( $q['nopaging'] ) && ! $query->is_singular ) {
+				$page = absint( $q['paged'] );
+				if ( ! $page ) {
+					$page = 1;
+				}
+			}
+
+			// Put sticky posts at the top of the posts array
+			$sticky_posts = get_option( cur_get_pinner_option_slug() );
+			if ( $page <= 1 && is_array( $sticky_posts ) && ! empty( $sticky_posts ) && ! $q['ignore_sticky_posts'] ) {
+				$num_posts     = count( $posts );
+				$sticky_offset = 0;
+				// Loop over posts and relocate stickies to the front.
+				for ( $i = 0; $i < $num_posts; $i ++ ) {
+					if ( in_array( $posts[ $i ]->ID, $sticky_posts ) ) {
+						$sticky_post = $posts[ $i ];
+						// Remove sticky from current position
+						array_splice( $posts, $i, 1 );
+						// Move to front, after other stickies
+						array_splice( $posts, $sticky_offset, 0, array( $sticky_post ) );
+						// Increment the sticky offset. The next sticky will be placed at this offset.
+						$sticky_offset ++;
+						// Remove post from sticky posts array
+						$offset = array_search( $sticky_post->ID, $sticky_posts );
+						unset( $sticky_posts[ $offset ] );
+					}
+				}
+
+				// If any posts have been excluded specifically, Ignore those that are sticky.
+				if ( ! empty( $sticky_posts ) && ! empty( $q['post__not_in'] ) ) {
+					$sticky_posts = array_diff( $sticky_posts, $q['post__not_in'] );
+				}
+
+				// Fetch sticky posts that weren't in the query results
+				if ( ! empty( $sticky_posts ) ) {
+					$stickies = get_posts( array(
+						'post__in'    => $sticky_posts,
+						'post_type'   => cur_get_cpt_slug(),
+						'post_status' => 'publish',
+						'nopaging'    => true
+					) );
+
+					foreach ( $stickies as $sticky_post ) {
+						array_splice( $posts, $sticky_offset, 0, array( $sticky_post ) );
+						$sticky_offset ++;
+					}
+				}
+			}
+		}
+
+		return $posts;
 	}
 
 	/**
