@@ -214,6 +214,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 								} // Post associated with term; remove term association
 								else if ( ! isset( $_POST[ $term_slug ] ) ) {
 									$set_modules[ $module ] = 'remove';
+
+									// If pinner module, remove from pinned items array
+									if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
+										cur_unpin_item( $curated_post );
+									}
 								}
 							} // Post not associated with term
 							else {
@@ -221,6 +226,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 								// Post not associated with term; add term association
 								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
 									$set_modules[ $module ] = 'add';
+
+									// If pinner module, add to pinner array
+									if ( 'pinner' === $module ) {
+										cur_pin_item( $curated_post );
+									}
 								}
 							}
 						}
@@ -229,7 +239,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 				// We have a change to make
 				if ( ! empty( $set_modules ) ) {
-					cur_set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post );
+					cur_set_item_modules( $set_modules, $curated_post );
 				}
 			}
 		}

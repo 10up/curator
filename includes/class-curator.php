@@ -51,10 +51,11 @@ class CUR_Curator extends CUR_Singleton {
 				'label'   => __( 'Feature Item', 'cur' ),
 			),
 			'pinner'   => array(
-				'slug'    => 'cur-pinned-item',
-				'option'  => 'curator-pinned-items',
-				'enabled' => false,
-				'label'   => __( 'Pin Item', 'cur' ),
+				'slug'      => 'cur-pinned-item',
+				'option'    => 'curator-pinned-items',
+				'max_items' => 3,
+				'enabled'   => false,
+				'label'     => __( 'Pin Item', 'cur' ),
 			),
 		);
 
@@ -85,6 +86,9 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Allow configuration of the default curator creation status of a post (Default is 'publish')
 		self::$default_post_status = apply_filters( 'cur_set_create_post_status', self::$default_post_status );
+
+		// Allow manual override on limit of pinned items. Default is 3
+		self::$modules['pinner']['max_items'] = apply_filters( 'cur_pinned_items', self::$modules['pinner']['max_items'] );
 	}
 
 	/**
@@ -113,6 +117,15 @@ class CUR_Curator extends CUR_Singleton {
 	 */
 	public function get_pinner_option_slug() {
 		return self::$modules['pinner']['option'];
+	}
+
+	/**
+	 * Getter for retrieving max pinnable items
+	 *
+	 * @return mixed
+	 */
+	public function get_pinner_max_items() {
+		return self::$modules['pinner']['max_items'];
 	}
 
 	/**
@@ -173,13 +186,10 @@ class CUR_Curator extends CUR_Singleton {
 	/**
 	 * Sets the modules for each item
 	 *
-	 * @param $post_id
-	 * @param $post
-	 * @param $modules
 	 * @param $set_modules
 	 * @param $curated_post
 	 */
-	public function set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post ) {
+	public function set_item_modules( $set_modules, $curated_post ) {
 
 		// Get a simple array of already associated terms in the format of: array( (int) $term_id => (string) $slug ) )
 		$associated_terms = $prev_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
@@ -193,38 +203,8 @@ class CUR_Curator extends CUR_Singleton {
 
 			if ( 'add' === $action ) {
 				$associated_terms[ $term->term_id ] = $term->slug;
-
-				// If pinner module, add to pinner array
-				if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
-					$pinned_items = get_option( cur_get_pinner_option_slug() );
-					if ( empty( $pinned_items ) ) {
-						$pinned_items = array();
-					}
-
-					array_unshift( $pinned_items, $curated_post );
-
-					// Update the pinned items with our new item in front
-					update_option( cur_get_pinner_option_slug(), $pinned_items );
-				}
 			} else if ( 'remove' === $action ) {
 				unset( $associated_terms[ $term->term_id ] );
-
-				// If pinner module, remove from pinned items array
-				if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
-					$pinned_items = get_option( cur_get_pinner_option_slug() );
-					if ( empty( $pinned_items ) ) {
-						continue;
-					}
-
-					// Find our item's current position
-					$position = array_search( (int) $curated_post, $pinned_items );
-
-					// Remove this item from the pinned items array
-					unset( $pinned_items[ $position ] );
-
-					// Update the pinned items array
-					update_option( cur_get_pinner_option_slug(), $pinned_items );
-				}
 			}
 		}
 
@@ -234,6 +214,70 @@ class CUR_Curator extends CUR_Singleton {
 			// Set terms to curated post object
 			wp_set_object_terms( $curated_post, array_keys( $associated_terms ), cur_get_tax_slug() );
 		}
+	}
+
+	/**
+	 * Pin item
+	 * Add curated post id to pinned item array in options table
+	 * If array gets larger than max # of items allowable, unpin oldest items
+	 *
+	 * @param $curated_id
+	 */
+	public function pin_item( $curated_id ) {
+
+		// Ensure our pinner module is enabled
+		if ( true !== cur_is_module_enabled( 'pinner' ) ) {
+			return;
+		}
+
+		$max_items = cur_get_pinner_max_items();
+		$option_slug = cur_get_pinner_option_slug();
+
+		$pinned_items = get_option( $option_slug );
+		if ( empty( $pinned_items ) ) {
+			$pinned_items = array();
+		} else if ( count( $pinned_items ) > $max_items ) {
+			$unpin_items = array_splice( $pinned_items, $max_items - 1, count( $pinned_items ) - $max_items );
+			foreach ( (array) $unpin_items as $unpin_item ) {
+				$this->unpin_item( $unpin_item );
+			}
+		}
+
+		array_unshift( $pinned_items, $curated_id );
+
+		// Update the pinned items with our new item in front
+		update_option( $option_slug, $pinned_items );
+	}
+
+	/**
+	 * Unpins item
+	 * Removes curated post ID from option array
+	 * Unassociates the pinner term from the curated post
+	 *
+	 * @todo unassociate pinner term from curated post
+	 *
+	 * @param $curated_id
+	 */
+	public function unpin_item( $curated_id ) {
+
+		// Ensure our pinner module is enabled
+		if ( true !== cur_is_module_enabled( 'pinner' ) ) {
+			return;
+		}
+
+		$pinned_items = get_option( cur_get_pinner_option_slug() );
+		if ( empty( $pinned_items ) ) {
+			return;
+		}
+
+		// Find our item's current position
+		$position = array_search( (int) $curated_id, $pinned_items );
+
+		// Remove this item from the pinned items array
+		unset( $pinned_items[ $position ] );
+
+		// Update the pinned items array
+		update_option( cur_get_pinner_option_slug(), $pinned_items );
 	}
 
 	/**
@@ -274,7 +318,7 @@ class CUR_Curator extends CUR_Singleton {
 
 	public function get_module_term( $module ) {
 		$modules = $this->get_modules();
-		$term = false;
+		$term    = false;
 
 		if ( ! empty( $modules[ $module ]['slug'] ) && true === $modules[ $module ]['enabled'] ) {
 			$term = $modules[ $module ]['slug'];
@@ -437,8 +481,8 @@ function cur_get_module_term( $module ) {
 	return CUR_Curator::factory()->get_module_term( $module );
 }
 
-function cur_set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post ) {
-	return CUR_Curator::factory()->set_item_modules( $post_id, $post, $modules, $set_modules, $curated_post );
+function cur_set_item_modules( $set_modules, $curated_post ) {
+	return CUR_Curator::factory()->set_item_modules( $set_modules, $curated_post );
 }
 
 function cur_uncurate_item( $post_id ) {
@@ -451,4 +495,16 @@ function cur_curate_post( $post_id, $post ) {
 
 function cur_get_pinner_option_slug() {
 	return CUR_Curator::factory()->get_pinner_option_slug();
+}
+
+function cur_pin_item( $curated_id ) {
+	return CUR_Curator::factory()->pin_item( $curated_id );
+}
+
+function cur_unpin_item( $curated_id ) {
+	return CUR_Curator::factory()->unpin_item( $curated_id );
+}
+
+function cur_get_pinner_max_items() {
+	return CUR_Curator::factory()->get_pinner_max_items();
 }
