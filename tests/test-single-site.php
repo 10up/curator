@@ -30,5 +30,6 @@ class CURTestSingleSite extends CUR_Test_Base {
 	 */
 	public function testPostSync() {
 		$this->assertTrue( true );
+		$this->assertFalse( false );
 	}
 }

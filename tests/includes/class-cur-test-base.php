@@ -38,6 +38,6 @@ class CUR_Test_Base extends WP_UnitTestCase {
 			'taxonomies' => array( 'post_tag', 'category' ),
 		);
 
-		register_post_type( 'ep_test', $args );
+		register_post_type( 'cur_test', $args );
 	}
 }
