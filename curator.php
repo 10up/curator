@@ -3,7 +3,7 @@
  * Plugin Name: Curator
  * Plugin URI:  http://github.com/AaronHolbrook/curator
  * Description: Select specific posts from across multiple post types to combine together and control the ordering.
- * Version:     0.2.0
+ * Version:     0.2.1
  * Author:      Aaron Holbrook, Gustave Gerhardt, 10up
  * Author URI:  http://10up.com
  * License:     GPLv2+

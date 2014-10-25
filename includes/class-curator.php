@@ -21,6 +21,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * Default enabled portions of the module
 	 *
 	 * @var array
+	 * @since 0.1.0
 	 */
 	private static $modules = array();
 
@@ -75,6 +76,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @uses cur_settings
 	 * @uses cur_set_post_types
 	 * @uses cur_set_create_post_status
+	 * @since 0.1.0
 	 */
 	public function filter_settings() {
 
@@ -105,6 +107,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * Getter for retrieving the settings
 	 *
 	 * @return array
+	 * @since 0.1.0
 	 */
 	public function get_modules() {
 		return self::$modules;
@@ -114,6 +117,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * Getter for retrieving the option name for the pinner
 	 *
 	 * @return mixed
+	 * @since 0.1.0
 	 */
 	public function get_pinner_option_slug() {
 		return self::$modules['pinner']['option'];
@@ -123,6 +127,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * Getter for retrieving max pinnable items
 	 *
 	 * @return mixed
+	 * @since 0.1.0
 	 */
 	public function get_pinner_max_items() {
 		return self::$modules['pinner']['max_items'];
@@ -135,6 +140,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $post
 	 *
 	 * @return bool|int|WP_Error
+	 * @since 0.1.0
 	 */
 	public function curate_post( $post_id, $post ) {
 
@@ -188,6 +194,7 @@ class CUR_Curator extends CUR_Singleton {
 	 *
 	 * @param $set_modules
 	 * @param $curated_post
+	 * @since 0.2.0
 	 */
 	public function set_item_modules( $set_modules, $curated_post ) {
 
@@ -222,6 +229,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * If array gets larger than max # of items allowable, unpin oldest items
 	 *
 	 * @param $curated_id
+	 * @since 0.2.0
 	 */
 	public function pin_item( $curated_id ) {
 
@@ -258,9 +266,8 @@ class CUR_Curator extends CUR_Singleton {
 	 * Removes curated post ID from option array
 	 * Unassociates the pinner term from the curated post
 	 *
-	 * @todo unassociate pinner term from curated post
-	 *
 	 * @param $curated_id
+	 * @since 0.2.0
 	 */
 	public function unpin_item( $curated_id, $pinned_items = null ) {
 		// Ensure our pinner module is enabled
@@ -297,6 +304,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $post_id
 	 *
 	 * @return mixed
+	 * @since 0.2.0
 	 */
 	public function get_related_id( $post_id ) {
 		$id = intval( get_post_meta( $post_id, $this->curated_meta_slug, true ) );
@@ -314,6 +322,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $post_id
 	 *
 	 * @return mixed
+	 * @since 0.2.0
 	 */
 	public function get_curated_post( $post_id ) {
 		// check to see if curator post type, if not then get the curator post type
@@ -330,6 +339,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $module
 	 *
 	 * @return bool
+	 * @since 0.2.0
 	 */
 	public function is_module_enabled( $module ) {
 		$is_enabled = false;
@@ -359,6 +369,7 @@ class CUR_Curator extends CUR_Singleton {
 	 *
 	 * @todo do more intelligent checking regardless of which post type id is passed
 	 * @param $post_id
+	 * @since 0.2.0
 	 */
 	public function uncurate_item( $post_id ) {
 
@@ -385,6 +396,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $query
 	 *
 	 * @return mixed
+	 * @since 0.2.0
 	 */
 	public function filter_sticky_posts( $posts, $query ) {
 

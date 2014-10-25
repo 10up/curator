@@ -1,9 +1,9 @@
 {
   "name": "curator",
   "title": "Curator",
-  "description": "Description123",
-  "version": "0.1.0",
-  "homepage": "http://10up.com",
+  "description": "Select specific posts from across multiple post types to combine together and control the ordering.",
+  "version": "0.2.1",
+  "homepage": "http://github.com/AaronHolbrook/curator",
   "author": {
     "name": "Aaron Holbrook, Gustave Gerhardt, 10up",
     "email": "info@10up.com",

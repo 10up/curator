@@ -1,9 +1,9 @@
 === Curator ===
 Contributors:      aaronholbrook, ghosttoast, 10up
 Tags:              curation, query, cpt, custom post types, order, sort
-Requires at least: 3.5.1
+Requires at least: 3.8
 Tested up to:      4.1-alpha
-Stable tag:        0.2.0
+Stable tag:        0.2.1
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,13 @@ Curator let's you specify which post types should be curated and then provides a
 
 
 == Changelog ==
+
+= 0.2.1 =
+* Add tests for curating and uncurating posts
+
+= 0.2.0 =
+* Featurer module
+* Pinner module
 
 = 0.1.0 =
 * First release

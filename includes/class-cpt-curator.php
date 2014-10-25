@@ -51,6 +51,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
 	}
 
+	/**
+	 * Add custom columns to the edit screen
+	 *
+	 * @since 0.2.0
+	 */
 	public function admin_head() {
 		if ( ! is_admin() ) {
 			return;
@@ -278,6 +283,13 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 	}
 
+	/**
+	 * Uncurate posts if they get unpublished
+	 *
+	 * @param $new_status
+	 * @param $old_status
+	 * @param $post
+	 */
 	public function transition_post_status( $new_status, $old_status, $post ) {
 		if ( $old_status === 'publish' && $new_status !== 'publish' ) {
 			$curated_post = cur_get_curated_post( $post->ID );
@@ -292,6 +304,8 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 	/**
 	 * Remove the 'Add New' submenu item
+	 *
+	 * @since 0.2.0
 	 */
 	public function remove_add_new_menu() {
 		remove_submenu_page( 'edit.php?post_type=' . $this->cpt_slug, 'post-new.php?post_type=' . $this->cpt_slug );
@@ -299,16 +313,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 	/**
 	 * Enqueue our styles and scripts for admin usage
+	 *
+	 * @since 0.2.0
 	 */
 	public function admin_enqueue() {
 		$postfix = ( defined( 'SCRIPT_DEBUG' ) && true === SCRIPT_DEBUG ) ? '' : '.min';
-
-		//		wp_enqueue_script(
-		//			'curator_admin',
-		//			CUR_URL . "/assets/js/curator_admin{$postfix}.js",
-		//			array( 'jquery' ),
-		//			CUR_VERSIO3N
-		//		);
 
 		wp_enqueue_style( 'curator_admin', CUR_URL . '/assets/css/curator_admin.css' );
 	}
@@ -317,6 +326,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 * Registration
 	 *
 	 * @uses register_post_type()
+	 * @since 0.1.0
 	 */
 	public function register_post_type() {
 		$menu_icon = apply_filters( 'cur_menu_icon', 'dashicons-schedule' );
@@ -369,6 +379,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 * @param $context
 	 *
 	 * @return mixed
+	 * @since 0.1.0
 	 */
 	public function filter_edit_post_link( $edit_link, $post_id, $context ) {
 
@@ -385,24 +396,6 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	}
 
 	/**
-	 * Remove the quick edit action in post admin edit screen
-	 *
-	 * @param $actions
-	 * @param $post
-	 *
-	 * @return mixed
-	 */
-	public function filter_page_row_actions( $actions, $post ) {
-		if ( $this->cpt_slug === get_post_type( $post ) ) {
-			if ( ! empty( $actions['inline hide-if-no-js'] ) ) {
-				unset( $actions['inline hide-if-no-js'] );
-			}
-		}
-
-		return $actions;
-	}
-
-	/**
 	 * Add custom columns to curator post type.
 	 * Featured Column (shows which posts should be weighted with more prominence)
 	 * Post Type (Shows origin post type)
@@ -410,6 +403,8 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 * @param $columns
 	 *
 	 * @return array
+	 *
+	 * @since 0.2.0
 	 */
 	public function manage_columns( $columns ) {
 		$new_columns = array(
@@ -439,6 +434,8 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 *
 	 * @param $column
 	 * @param $post_id
+	 *
+	 * @since 0.2.0
 	 */
 	public function display_custom_columns( $column, $post_id ) {
 		$modules = cur_get_modules();
@@ -490,6 +487,10 @@ class CUR_CPT_Curator extends CUR_Singleton {
 }
 
 CUR_CPT_Curator::factory();
+
+/**
+ * Accessor Functions
+ */
 
 function cur_get_cpt_slug() {
 	return CUR_CPT_Curator::factory()->cpt_slug;

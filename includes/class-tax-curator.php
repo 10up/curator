@@ -12,11 +12,13 @@ class CUR_Tax_Curator extends CUR_Singleton {
 	 * Slug of taxonomy
 	 *
 	 * @var string
+	 * @since 0.1.0
 	 */
 	public $tax_slug = 'cur-tax-curator';
 
 	/**
 	 * Build it
+	 * @since 0.1.0
 	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_taxonomies' ) );
@@ -24,6 +26,7 @@ class CUR_Tax_Curator extends CUR_Singleton {
 
 	/**
 	 * Registers taxonomies for "cur" post_type
+	 * @since 0.1.0
 	 */
 	public function register_post_taxonomies() {
 		$labels = array(
@@ -62,6 +65,7 @@ class CUR_Tax_Curator extends CUR_Singleton {
 	/**
 	 * Sets the default terms for us to use
 	 * Fires on plugin activation
+	 * @since 0.1.0
 	 */
 	public function setup_default_terms() {
 
@@ -88,6 +92,10 @@ class CUR_Tax_Curator extends CUR_Singleton {
 }
 
 CUR_Tax_Curator::factory();
+
+/**
+ * Accessor Functions
+ */
 
 function cur_get_tax_slug() {
 	return CUR_Tax_Curator::factory()->tax_slug;
