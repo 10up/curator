@@ -1,7 +1,7 @@
 === Curator ===
 Contributors:      aaronholbrook, ghosttoast, 10up
 Tags:              curation, query, cpt, custom post types, order, sort
-Requires at least: 3.7
+Requires at least: 3.8
 Tested up to:      4.1-alpha
 Stable tag:        0.2.0
 License:           GPLv2 or later
