@@ -6,6 +6,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * Slug of post meta to store ID of related post
 	 *
 	 * @var string
+	 * @since 0.1.0
 	 */
 	private $curated_meta_slug = '_curator_related_id';
 
