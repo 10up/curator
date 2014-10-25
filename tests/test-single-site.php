@@ -79,5 +79,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Uncurate post
 		$uncurate_item_response = cur_uncurate_item( $post_id );
 		$this->assertEquals( 'stdClass', get_class( $uncurate_item_response ) );
+
+		$this->assertNotEquals( false, $uncurate_item_response );
 	}
 }
