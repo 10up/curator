@@ -385,7 +385,7 @@ class CUR_Curator extends CUR_Singleton {
 		delete_post_meta( $post_id, $this->curated_meta_slug );
 
 		// Finally, delete the curation post entirely
-		wp_delete_post( $curated_id, true );
+		return wp_delete_post( $curated_id, true );
 	}
 
 	/**
