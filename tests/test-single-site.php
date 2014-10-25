@@ -28,7 +28,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 	}
 
 	/**
-	 * Test a simple post curation
+	 * Test a post curation
 	 *
 	 * @since 0.2.1
 	 */
@@ -59,5 +59,25 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$curate_term = cur_get_module_term( 'curator' );
 		$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 		$this->assertTrue( in_array( $curate_term, $associated_terms ) );
+	}
+
+	/**
+	 * Test a post uncuration
+	 *
+	 * @since 0.2.1
+	 */
+	public function testPostUncuration() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+
+		// Ensure we've actually curated it
+		$this->assertEquals( $post_id, cur_get_related_id( $curated_post ) );
+		$this->assertEquals( $curated_post, cur_get_related_id( $post_id ) );
+
+		// Uncurate post
+		$uncurate_item_response = cur_uncurate_item( $post_id );
+		$this->assertEquals( 'stdClass', get_class( $uncurate_item_response ) );
 	}
 }
