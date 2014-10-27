@@ -45,9 +45,6 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		// Modify the edit post link to go directly to the original item
 		add_filter( 'get_edit_post_link', array( $this, 'filter_edit_post_link' ), 10, 3 );
 
-		// Modify the page row actions in admin
-		add_filter( 'page_row_actions', array( $this, 'filter_page_row_actions' ), 10, 2 );
-
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
 	}
 
@@ -74,8 +71,12 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_action( 'manage_posts_custom_column', array( $this, 'display_custom_columns' ), 10, 2 );
 
 		$post_types = cur_get_post_types();
-		foreach ( $post_types as $type ) {
-			add_action( 'manage_' . $type . '_posts_columns', array( $this, 'display_custom_columns' ), 10, 2 );
+		if ( ! empty( $post_types ) ) {
+			foreach ( (array) $post_types as $type ) {
+				if ( 'post' !== $type || 'page' !== $type ) {
+					add_action( 'manage_' . $type . '_posts_columns', array( $this, 'display_custom_columns' ), 10, 2 );
+				}
+			}
 		}
 	}
 
