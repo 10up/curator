@@ -370,6 +370,7 @@ class CUR_Curator extends CUR_Singleton {
 	 *
 	 * @todo do more intelligent checking regardless of which post type id is passed
 	 * @param $post_id
+	 * @return WP_Post | array | bool
 	 * @since 0.2.0
 	 */
 	public function uncurate_item( $post_id ) {
@@ -477,7 +478,8 @@ class CUR_Curator extends CUR_Singleton {
 	public function filter_the_posts( $posts, $query ) {
 
 		// Ensure that we are only filtering for curator queries
-		if ( ! empty( $query->query['post_type'] )
+		if ( ! is_admin()
+		     && ! empty( $query->query['post_type'] )
 		     && ! is_array( $query->query['post_type'] )
 		     && cur_get_cpt_slug() === $query->query['post_type']
 		) {
