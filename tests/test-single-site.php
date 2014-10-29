@@ -118,19 +118,19 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Curate the post
 		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
 
-		// Ensure we've actually curated it
+		// Ensure that we've actually curated it
 		$this->assertEquals( $post_id, cur_get_related_id( $curated_post ) );
 		$this->assertEquals( $curated_post, cur_get_related_id( $post_id ) );
 
 		// Uncurate post by unpublishing the original item
-		$post = get_post($post_id, ARRAY_A);
+		$post = get_post( $post_id, ARRAY_A );
 		$post['post_status'] = 'draft';
-		wp_insert_post($post);
+		wp_insert_post( $post );
 
-		// Ensure that the post status has been updated to draft
+		// Ensure that the post status has been updated to a draft
 		$this->assertEquals( 'draft', get_post_status( $post_id ) );
 
-		// Ensure that their is no longer a related curated post
+		// Ensure that there is no longer a related curated post
 		$this->assertEquals( false, cur_get_curated_post( $post_id ) );
 
 		// Ensure the curated post is completely gone
