@@ -1,5 +1,5 @@
 Curator [![Build Status](https://travis-ci.org/AaronHolbrook/curator.svg?branch=master)](https://travis-ci.org/AaronHolbrook/curator)
-========
+=======
 
 Select specific posts from across multiple post types to combine together and control the ordering.
 
