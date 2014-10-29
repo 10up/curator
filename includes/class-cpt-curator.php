@@ -86,16 +86,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 * @param $post_id
 	 */
 	public function trashed_post( $post_id ) {
-		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
+		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 
 			// Get the ID of the main item, and then use the same removal/disconnect method
-			cur_uncurate_item( cur_get_related_id( $post_id ) );
-		} else if ( in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
-
-			// Deleting the main item, let's remove the attached curated item
 			cur_uncurate_item( $post_id );
 		}
-
 	}
 
 	/**
@@ -295,9 +290,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		if ( $old_status === 'publish' && $new_status !== 'publish' ) {
 			$curated_post = cur_get_curated_post( $post->ID );
 
-			if ( false !== $curated_post && is_int( $curated_post ) ) {
+			if ( false !== $curated_post && is_int( $curated_post ) && $post->ID !== $curated_post ) {
 
-				// Found a curated post, let's uncurate it
+				// Transitioning an original post, let's uncurate it
 				cur_uncurate_item( $post->ID );
 			}
 		}

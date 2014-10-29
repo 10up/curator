@@ -311,10 +311,17 @@ class CUR_Curator extends CUR_Singleton {
 		$id = intval( get_post_meta( $post_id, $this->curated_meta_slug, true ) );
 
 		if ( is_int( $id ) && 0 !== $id ) {
-			return $id;
-		} else {
-			return false;
+			$self_id = intval( get_post_meta( $id, $this->curated_meta_slug, true ) );
+
+			// Something got unsynced, there's no related post that links back to this. Cleaning up
+			if ( "" === $self_id ) {
+				delete_post_meta( $post_id, $this->curated_meta_slug, true );
+			} else if ( $self_id === $post_id ) {
+				return $id;
+			}
 		}
+
+		return false;
 	}
 
 	/**
@@ -331,6 +338,14 @@ class CUR_Curator extends CUR_Singleton {
 			return $post_id;
 		} else {
 			return $this->get_related_id( $post_id );
+		}
+	}
+
+	public function get_original_post( $post_id ) {
+		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
+			return $this->get_related_id( $post_id );
+		} else {
+			return $post_id;
 		}
 	}
 
@@ -368,25 +383,31 @@ class CUR_Curator extends CUR_Singleton {
 	/**
 	 * Remove curation status from item
 	 *
-	 * @todo do more intelligent checking regardless of which post type id is passed
 	 * @param $post_id
 	 * @return WP_Post | array | bool
 	 * @since 0.2.0
 	 */
 	public function uncurate_item( $post_id ) {
+		// Get original item
+		$original_id = cur_get_original_post( $post_id );
 
-		// Remove item module
-		$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
-
+		// Get curated item
 		$curated_id = cur_get_curated_post( $post_id );
 
-		// Unset the curation term of the main post
-		wp_remove_object_terms( $post_id, $curate_term->term_id, cur_get_tax_slug() );
+		// Unset all the things from the original post
+		if ( ! empty( $original_id ) && is_int( $original_id ) ) {
 
-		// Remove the associated meta of the curated post ID
-		delete_post_meta( $post_id, $this->curated_meta_slug );
+			// Remove item module
+			$curate_term = get_term_by( 'slug', cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
-		// Finally, delete the curation post entirely
+			// Unset the curation term of the main post
+			wp_remove_object_terms( $original_id, $curate_term->term_id, cur_get_tax_slug() );
+
+			// Remove the associated meta of the curated post ID
+			delete_post_meta( $post_id, $this->curated_meta_slug );
+		}
+
+		// Delete the curation post entirely
 		return wp_delete_post( $curated_id, true );
 	}
 
@@ -553,5 +574,9 @@ function cur_get_pinner_max_items() {
 }
 
 function cur_get_curated_post( $post_id ) {
-	return CUR_Curator::factory()->get_curated_post ( $post_id );
+	return CUR_Curator::factory()->get_curated_post( $post_id );
+}
+
+function cur_get_original_post( $post_id ) {
+	return CUR_Curator::factory()->get_original_post( $post_id );
 }

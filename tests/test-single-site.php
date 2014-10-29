@@ -82,4 +82,58 @@ class CURTestSingleSite extends CUR_Test_Base {
 
 		$this->assertNotEquals( false, $uncurate_item_response );
 	}
+
+	/**
+	 * Test a post uncuration by deleting a curated post
+	 *
+	 * @since 0.2.1
+	 */
+	public function testDeleteCuratePost() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+
+		// Ensure we've actually curated it
+		$this->assertEquals( $post_id, cur_get_related_id( $curated_post ) );
+		$this->assertEquals( $curated_post, cur_get_related_id( $post_id ) );
+
+		// Uncurate post by deleting the curated item
+		wp_trash_post( $curated_post );
+
+		$this->assertEquals( false, cur_get_curated_post( $post_id ) );
+
+		// Ensure that the curated post is completely gone
+		$this->assertEquals( null, get_post( $curated_post ) );
+	}
+
+	/**
+	 * Test post uncuration by unpublishing an original post
+	 *
+	 * @since 0.2.1
+	 */
+	public function testUnpublishOriginalPost() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+
+		// Ensure we've actually curated it
+		$this->assertEquals( $post_id, cur_get_related_id( $curated_post ) );
+		$this->assertEquals( $curated_post, cur_get_related_id( $post_id ) );
+
+		// Uncurate post by unpublishing the original item
+		$post = get_post($post_id, ARRAY_A);
+		$post['post_status'] = 'draft';
+		wp_insert_post($post);
+
+		// Ensure that the post status has been updated to draft
+		$this->assertEquals( 'draft', get_post_status( $post_id ) );
+
+		// Ensure that their is no longer a related curated post
+		$this->assertEquals( false, cur_get_curated_post( $post_id ) );
+
+		// Ensure the curated post is completely gone
+		$this->assertEquals( null, get_post( $curated_post ) );
+	}
 }
