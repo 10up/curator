@@ -308,16 +308,17 @@ class CUR_Curator extends CUR_Singleton {
 	 * @since 0.2.0
 	 */
 	public function get_related_id( $post_id ) {
-		$id = intval( get_post_meta( $post_id, $this->curated_meta_slug, true ) );
+		$post_id = intval( $post_id );
+		$related_id = intval( get_post_meta( $post_id, $this->curated_meta_slug, true ) );
 
-		if ( is_int( $id ) && 0 !== $id ) {
-			$self_id = intval( get_post_meta( $id, $this->curated_meta_slug, true ) );
+		if ( is_int( $related_id ) && 0 !== $related_id ) {
+			$self_id = intval( get_post_meta( $related_id, $this->curated_meta_slug, true ) );
 
 			// Something got unsynced, there's no related post that links back to this. Cleaning up
 			if ( "" === $self_id ) {
 				delete_post_meta( $post_id, $this->curated_meta_slug, true );
 			} else if ( $self_id === $post_id ) {
-				return $id;
+				return $related_id;
 			}
 		}
 
@@ -388,6 +389,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @since 0.2.0
 	 */
 	public function uncurate_item( $post_id ) {
+
 		// Get original item
 		$original_id = cur_get_original_post( $post_id );
 
@@ -404,7 +406,7 @@ class CUR_Curator extends CUR_Singleton {
 			wp_remove_object_terms( $original_id, $curate_term->term_id, cur_get_tax_slug() );
 
 			// Remove the associated meta of the curated post ID
-			delete_post_meta( $post_id, $this->curated_meta_slug );
+			delete_post_meta( $original_id, $this->curated_meta_slug );
 		}
 
 		// Delete the curation post entirely

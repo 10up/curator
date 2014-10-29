@@ -116,7 +116,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 		$modules = cur_get_modules();
 
-		$curated_post = cur_get_related_id( $post->ID );
+		$curated_post = cur_get_curated_post( $post->ID );
 
 		if ( false !== $curated_post ) {
 			$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
@@ -192,7 +192,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		 * Run before anything else
 		 */
 		if ( ! empty( $modules['curator'] ) && $modules['curator']['enabled'] && true === $modules['curator']['enabled'] ) {
-			$curated_post = cur_get_related_id( $post->ID );
+			$curated_post = cur_get_curated_post( $post->ID );
 			$curate_term = cur_get_module_term( 'curator' );
 
 			// This post is not curated
