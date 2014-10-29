@@ -75,7 +75,7 @@ $args = array(
 $curated_posts = new WP_Query( $args );
 ```
 
-And then load up your loop and interact with the posts normally:  
+Load up your loop and interact with the posts normally:  
 
 ```php
 if ( $curated_posts->have_posts() ) : while ( $curated_posts->have_posts() ) : $curated_posts->the_post();
