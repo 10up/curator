@@ -1,8 +1,12 @@
 <?php
 
-// Add our post types to include in the curator plugin
-add_filter( 'cur_set_post_types', 'cur_test_setup_post_types' );
-
+/**
+ * Add our post types to include for testing
+ *
+ * @param $post_types
+ *
+ * @return array
+ */
 function cur_test_setup_post_types( $post_types ) {
 	$curator_post_types = array(
 		'cur_test',
@@ -11,6 +15,24 @@ function cur_test_setup_post_types( $post_types ) {
 
 	return $curator_post_types;
 }
+add_filter( 'cur_set_post_types', 'cur_test_setup_post_types' );
+
+/**
+ * Enable all modules for testing
+ *
+ * @param $modules
+ *
+ * @return mixed
+ */
+function cur_test_setup_modules( $modules ) {
+	// Enable curation, featuring, and pinning of items in the curation plugin
+	$modules['curator']['enabled'] = true;
+	$modules['featurer']['enabled'] = true;
+	$modules['pinner']['enabled'] = true;
+
+	return $modules;
+}
+add_filter( 'cur_modules', 'cur_test_setup_modules' );
 
 /**
  * Create a WP post

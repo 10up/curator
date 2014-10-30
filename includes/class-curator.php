@@ -519,6 +519,47 @@ class CUR_Curator extends CUR_Singleton {
 
 		return $posts;
 	}
+
+	public function is_featured( $post = 0 ) {
+		$post = get_post( $post );
+
+		// get the curated post if we don't already have it
+		$curated_post = cur_get_curated_post( $post->ID );
+
+		// If we can't find a curated post or if it's not an int returned, abort
+		if ( false === $curated_post || ! is_int( $curated_post ) ) {
+			return false;
+		}
+
+		// Get our module information
+		$modules = cur_get_modules();
+
+		// Ensure that our featurer module is enabled
+		if ( empty( $modules['featurer'] ) ) {
+			return false;
+		}
+
+		// Writing out $modules['featurer'] gets a bit long, let's tidy it up
+		$featurer = $modules['featurer'];
+
+		// Ensure that our module information is correct and contains 'enabled' and 'slug' items
+		if ( empty( $featurer['enabled'] ) || true !== $featurer['enabled'] || empty( $featurer['slug'] ) ) {
+			return false;
+		}
+
+		// Get our feature term information
+		$featurer_term = get_term_by( 'slug', $featurer['slug'], cur_get_tax_slug() );
+
+		// Get terms associated with curated post
+		$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+
+		// Check to see if the curated post has the feature term associated with it - if so, then this is featured!
+		if ( ! empty( $associated_terms[ $featurer_term->term_id ] ) ) {
+			return true;
+		}
+
+		return false;
+	}
 }
 
 CUR_Curator::factory()->setup();
@@ -581,4 +622,8 @@ function cur_get_curated_post( $post_id ) {
 
 function cur_get_original_post( $post_id ) {
 	return CUR_Curator::factory()->get_original_post( $post_id );
+}
+
+function cur_is_featured( $post_id = 0 ) {
+	return CUR_Curator::factory()->is_featured( $post_id );
 }

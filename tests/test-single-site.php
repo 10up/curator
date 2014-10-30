@@ -136,4 +136,35 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Ensure the curated post is completely gone
 		$this->assertEquals( null, get_post( $curated_post ) );
 	}
+
+	public function testFeaturePost() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+
+		// Feature the post
+		cur_set_item_modules( array( 'featurer' => 'add' ), $curated_post );
+
+		// Check to see if the item is featured
+		$featurer_term = get_term_by( 'slug', 'cur-featured-item', 'cur-tax-curator' );
+
+		// Get terms associated with curated post
+		$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+
+		$this->assertTrue( ! empty( $associated_terms[ $featurer_term->term_id ] ) );
+
+		// Test the cur_is_featured module - should also report true
+		$this->assertEquals( true, cur_is_featured( $post_id ) );
+	}
+
+	public function testNonFeaturedPost() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+
+		// Test that the item is not featured
+		$this->assertEquals( false, cur_is_featured( $post_id ) );
+	}
 }
