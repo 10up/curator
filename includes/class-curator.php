@@ -520,6 +520,13 @@ class CUR_Curator extends CUR_Singleton {
 		return $posts;
 	}
 
+	/**
+	 * Determine if a post is featured. Will get the current post in the loop unless a
+	 * specific post ID is passed.
+	 *
+	 * @param int $post
+	 * @return bool
+	 */
 	public function is_featured( $post = 0 ) {
 		$post = get_post( $post );
 
