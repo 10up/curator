@@ -86,3 +86,29 @@ if ( $curated_posts->have_posts() ) : while ( $curated_posts->have_posts() ) : $
 	the_content();
 endwhile; endif;
 ```
+
+### Helper Functions
+
+You can use the function ```cur_is_featured()``` either within the loop or outside of the loop (if you pass it a post's ID) to determine if the curated post is featured or not.
+
+Please ensure that you've enabled the featurer module first before attempting to use it, or you will not be able to feature any items or detect if items are featured.
+
+```php
+$args = array(
+	'post_type' => 'cur-curator',
+);
+
+$curated_posts = new WP_Query( $args );
+
+if ( $curated_posts->have_posts() ) : while ( $curated_posts->have_posts() ) : $curated_posts->the_post();
+
+	// Set our default to not be featured
+	$featured = false;
+	
+	// Ensure this function exists, if you don't wrap the function call and then deactivate the plugin you will cause a fatal error in your installation
+	if ( function_exists( `cur_is_featured` ) ) {
+		$featured = cur_is_featured();
+	}
+
+endwhile; endif;
+```
