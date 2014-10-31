@@ -137,8 +137,11 @@ class CUR_CPT_Curator extends CUR_Singleton {
 					?>
 					<div class="misc-pub-section">
 						<input type="checkbox" id="<?php esc_attr_e( $module_info['slug'] ); ?>" name="<?php esc_attr_e( $module_info['slug'] ); ?>" <?php checked( true, $checked ); ?> value="on" />
-						<?php printf( '<label for="%s">%s</label>', esc_attr( $module_info['slug'] ), esc_html( $module_info['label'] ) ); ?>
 						<?php
+						printf( '<label for="%s">%s</label>', esc_attr( $module_info['slug'] ), esc_html( $module_info['label'] ) );
+
+						do_action( 'cur_module_' . $module . '_control' );
+
 						if ( 'curator' === $module ) {
 							wp_nonce_field( 'cur_curate_item', 'cur_curate_item_nonce' );
 						} ?>
@@ -244,6 +247,19 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 								// Post associated with term; no change
 								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
+
+									// Featurer is enabled, allow for custom sizes
+									if ( ! empty( $_POST['cur-featurer-size'] ) ) {
+										if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
+
+											// Ensure custom sizes exist
+											$sizes = cur_get_featurer_sizes();
+											if ( ! empty( $sizes ) ) {
+												update_post_meta( $curated_post, 'cur_featured_size', sanitize_text_field( $_POST['cur-featurer-size'] ) );
+											}
+										}
+									}
+
 									continue;
 								} // Post associated with term; remove term association
 								else if ( ! isset( $_POST[ $term_slug ] ) ) {
@@ -252,6 +268,12 @@ class CUR_CPT_Curator extends CUR_Singleton {
 									// If pinner module, remove from pinned items array
 									if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
 										cur_unpin_item( $curated_post );
+									}
+
+									// Ensure custom sizes exist
+									$sizes = cur_get_featurer_sizes();
+									if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
+										delete_post_meta( $curated_post, 'cur_featured_size' );
 									}
 								}
 							} // Post not associated with term
@@ -262,7 +284,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 									$set_modules[ $module ] = 'add';
 
 									// If pinner module, add to pinner array
-									if ( 'pinner' === $module ) {
+									if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
 										cur_pin_item( $curated_post );
 									}
 								}

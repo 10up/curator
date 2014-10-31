@@ -16,3 +16,15 @@ body.post-type-cur-curator th.manage-column.column-featured {
   width: 10%; }
 body.post-type-cur-curator th.manage-column.column-post_type {
   width: 15%; }
+
+.featurer-sizes {
+  padding-top: 10px; }
+  .featurer-sizes input[type="radio"] {
+    display: none; }
+  .featurer-sizes label img {
+    border: 1px solid transparent;
+    margin-right: 5px; }
+  .featurer-sizes input[type="radio"]:checked + img {
+    border-color: #5b9dd9;
+    -webkit-box-shadow: 0 0 2px rgba(30, 140, 190, 0.8);
+    box-shadow: 0 0 2px rgba(30, 140, 190, 0.8); }

@@ -51,6 +51,15 @@ class CUR_Curator extends CUR_Singleton {
 				'slug'    => 'cur-featured-item',
 				'enabled' => false,
 				'label'   => __( 'Feature Item', 'cur' ),
+				'sizes'   => array(
+					'enabled' => false,
+					'sizes'   => array(
+						'1x1' => true,
+						'2x2' => true,
+						'2x1' => true,
+						'1x2' => false,
+					),
+				),
 			),
 			'pinner'   => array(
 				'slug'      => 'cur-pinned-item',
@@ -69,6 +78,9 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Replace the Curator query items with their original items
 		add_filter( 'the_posts', array( $this, 'filter_the_posts' ), 900, 2 );
+
+		// Display featurer sizes
+		add_action( 'cur_module_featurer_control', array( $this, 'featurer_size_display' ) );
 	}
 
 	/**
@@ -92,6 +104,12 @@ class CUR_Curator extends CUR_Singleton {
 
 		// Allow manual override on limit of pinned items. Default is 3
 		self::$modules['pinner']['max_items'] = apply_filters( 'cur_pinned_items', self::$modules['pinner']['max_items'] );
+
+		// Featurer sizes are disabled by default
+		self::$modules['featurer']['sizes']['enabled'] = apply_filters( 'cur_featurer_size_status', self::$modules['featurer']['sizes']['enabled'] );
+
+		// Featurer size controls
+		self::$modules['featurer']['sizes']['sizes'] = apply_filters( 'cur_featurer_sizes', self::$modules['featurer']['sizes']['sizes'] );
 	}
 
 	/**
@@ -132,6 +150,23 @@ class CUR_Curator extends CUR_Singleton {
 	 */
 	public function get_pinner_max_items() {
 		return self::$modules['pinner']['max_items'];
+	}
+
+	/**
+	 * Getter for retrieving the featurer sizes
+	 *
+	 * @return mixed
+	 */
+	public function get_featurer_sizes() {
+		$sizes = false;
+
+		if ( cur_is_module_enabled('featurer') ) {
+			if ( true === self::$modules['featurer']['sizes']['enabled'] ) {
+				$sizes = self::$modules['featurer']['sizes']['sizes'];
+			}
+		}
+
+		return $sizes;
 	}
 
 	/**
@@ -333,7 +368,15 @@ class CUR_Curator extends CUR_Singleton {
 	 * @return mixed
 	 * @since 0.2.0
 	 */
-	public function get_curated_post( $post_id ) {
+	public function get_curated_post( $post_id = 0 ) {
+		$post = get_post( $post_id );
+		$post_id = $post->ID;
+
+		// Ensure we have a legitimate post
+		if ( is_wp_error( $post_id ) || empty( $post_id ) ) {
+			return;
+		}
+
 		// check to see if curator post type, if not then get the curator post type
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
 			return $post_id;
@@ -342,7 +385,23 @@ class CUR_Curator extends CUR_Singleton {
 		}
 	}
 
+	/**
+	 * Return the original post's ID, regardless of what post_id is passed
+	 *
+	 * @param $post_id
+	 *
+	 * @return mixed
+	 */
 	public function get_original_post( $post_id ) {
+		$post = get_post( $post_id );
+		$post_id = $post->ID;
+
+		// Ensure we have a legitimate post
+		if ( is_wp_error( $post_id ) || empty( $post_id ) ) {
+			return;
+		}
+
+		// See what post we're dealing with, get the original
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
 			return $this->get_related_id( $post_id );
 		} else {
@@ -567,6 +626,83 @@ class CUR_Curator extends CUR_Singleton {
 
 		return false;
 	}
+
+	/**
+	 * Display the featurer radio buttons to choose how prominent an item should be
+	 *
+	 * @return void
+	 */
+	public function featurer_size_display() {
+
+		// If featurer isn't enabled, abort
+		if ( true !== cur_is_module_enabled( 'featurer' ) ) {
+			return;
+		}
+
+		// If post isn't featured then we shouldn't show this yet
+		if ( ! cur_is_featured() ) {
+			return;
+		}
+
+		// If our size submodule isn't enabled, abort
+		if ( true !== self::$modules['featurer']['sizes']['enabled'] ) {
+			return;
+		}
+
+		// Get our sizes
+		$sizes = $this->get_featurer_sizes();
+
+		// Ensure our sizes array matches expectations (not empty && an array)
+		if ( empty( $sizes ) || ! is_array( $sizes ) ) {
+			return;
+		}
+
+		// Do we already have a selected size?
+		$curated_post = cur_get_curated_post();
+		$current_size = get_post_meta( $curated_post, 'cur_featured_size', true );
+
+		if ( empty( $current_size ) ) {
+			$current_size = '1x1';
+		}
+		?>
+		<div class="featurer-sizes">
+			<?php
+			foreach ( (array) $sizes as $size_key => $size_enabled ) :
+				if ( true === $size_enabled ) : ?>
+					<label>
+						<?php
+						printf( '<input type="radio" name="cur-featurer-size" value="%s" %s>',
+							esc_attr( $size_key ),
+							checked( $size_key, $current_size, false ) );
+						?>
+						<img src="<?php esc_attr_e( CUR_URL . 'images/featurer-grid-' . $size_key . '.png' ); ?>">
+					</label>
+				<?php
+				endif;
+			endforeach; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Get the featured size of the curated item
+	 *
+	 * @param int $post_id
+	 *
+	 * @return mixed
+	 */
+	public function get_featured_size( $post_id = 0 ) {
+		$post = get_post( $post_id );
+
+		// get the curated post if we don't already have it
+		$curated_post = cur_get_curated_post( $post->ID );
+
+		if ( true !== cur_is_featured( $curated_post ) ) {
+			return;
+		}
+
+		return get_post_meta( $curated_post, 'cur_featured_size', true );
+	}
 }
 
 CUR_Curator::factory()->setup();
@@ -623,7 +759,7 @@ function cur_get_pinner_max_items() {
 	return CUR_Curator::factory()->get_pinner_max_items();
 }
 
-function cur_get_curated_post( $post_id ) {
+function cur_get_curated_post( $post_id = 0 ) {
 	return CUR_Curator::factory()->get_curated_post( $post_id );
 }
 
@@ -633,4 +769,12 @@ function cur_get_original_post( $post_id ) {
 
 function cur_is_featured( $post_id = 0 ) {
 	return CUR_Curator::factory()->is_featured( $post_id );
+}
+
+function cur_get_featurer_sizes() {
+	return CUR_Curator::factory()->get_featurer_sizes();
+}
+
+function cur_get_featured_size( $post_id = 0 ) {
+	return CUR_Curator::factory()->get_featured_size( $post_id );
 }
