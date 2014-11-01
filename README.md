@@ -1,4 +1,4 @@
-Curator [![Build Status](https://travis-ci.org/10up/curator.svg?branch=master)](https://travis-ci.org/10up/curator) [![Coverage Status](https://img.shields.io/coveralls/10up/curator.svg)](https://coveralls.io/r/10up/curator?branch=master) [![Code Climate](https://codeclimate.com/github/10up/curator/badges/gpa.svg)](https://codeclimate.com/github/10up/curator)
+Curator [![Build Status](https://travis-ci.org/10up/curator.svg?branch=master)](https://travis-ci.org/10up/curator) [![Test Coverage](https://codeclimate.com/github/10up/curator/badges/coverage.svg)](https://codeclimate.com/github/10up/curator) [![Code Climate](https://codeclimate.com/github/10up/curator/badges/gpa.svg)](https://codeclimate.com/github/10up/curator)
 =======
 
 Select specific posts from across multiple post types to combine together and control the ordering.
