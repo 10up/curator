@@ -1,4 +1,4 @@
-Curator [![Build Status](https://travis-ci.org/10up/curator.svg?branch=master)](https://travis-ci.org/10up/curator)
+Curator [![Build Status](https://travis-ci.org/10up/curator.svg?branch=master)](https://travis-ci.org/10up/curator) [![Coverage Status](https://img.shields.io/coveralls/10up/curator.svg)](https://coveralls.io/r/10up/curator?branch=master)
 =======
 
 Select specific posts from across multiple post types to combine together and control the ordering.
@@ -104,7 +104,7 @@ if ( $curated_posts->have_posts() ) : while ( $curated_posts->have_posts() ) : $
 
 	// Set our default to not be featured
 	$featured = false;
-	
+
 	// Ensure this function exists, if you don't wrap the function call and then deactivate the plugin you will cause a fatal error in your installation
 	if ( function_exists( `cur_is_featured` ) ) {
 		$featured = cur_is_featured();
