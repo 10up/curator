@@ -54,7 +54,6 @@ class CUR_Curator extends CUR_Singleton {
 				'sizes'   => array(
 					'enabled' => false,
 					'sizes'   => array(
-						'1x1' => true,
 						'2x2' => true,
 						'2x1' => true,
 						'1x2' => false,
@@ -661,8 +660,9 @@ class CUR_Curator extends CUR_Singleton {
 		$curated_post = cur_get_curated_post();
 		$current_size = get_post_meta( $curated_post, 'cur_featured_size', true );
 
+		// Set default size
 		if ( empty( $current_size ) ) {
-			$current_size = '1x1';
+			$current_size = '2x2';
 		}
 		?>
 		<div class="featurer-sizes">
