@@ -186,6 +186,7 @@ class CUR_Curator extends CUR_Singleton {
 			'posts_per_page' => 1,
 			'orderby'        => 'menu_order',
 			'order'          => 'ASC',
+			'no_found_rows'  => true,
 		);
 
 		$top_curated_items = new WP_Query( $args );

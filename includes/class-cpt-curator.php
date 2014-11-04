@@ -174,7 +174,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 
 		// Check user's permissions
-		if ( ! current_user_can( 'edit_page', $post_id ) ) {
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
 
