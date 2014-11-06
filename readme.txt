@@ -4,8 +4,8 @@ Tags:              curation, query, cpt, custom post types, order, sort
 Requires at least: 4.0
 Tested up to:      4.1-alpha
 Stable tag:        0.2.2
-License:           GPLv2 or later
-License URI:       http://www.gnu.org/licenses/gpl-2.0.html
+License:           MIT
+License URI:       http://opensource.org/licenses/MIT
 
 Select specific posts from across multiple post types to combine together and control the ordering.
 

@@ -1,4 +1,23 @@
 {
+	"name": "10up/curator",
+	"description": "Select specific posts from across multiple post types to combine together and control the ordering.",
+	"type": "wordpress-plugin",
+	"keywords": ["wordpress", "plugin", "curation", "post-types"],
+	"license": ["MIT"],
+	"authors": [
+		{
+			"name": "Aaron Holbrook",
+			"email": "aaron@10up.com",
+			"homepage": "http://aaronjholbrook.com"
+		},
+		{
+			"name": "10up",
+			"homepage": "http://10up.com"
+		}
+	],
+	"require": {
+		"php": ">=5.3"
+	},
   "require-dev": {
     "codeclimate/php-test-reporter": "dev-master"
   }
