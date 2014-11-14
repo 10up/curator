@@ -219,6 +219,8 @@ class CUR_Curator extends CUR_Singleton {
 
 			wp_add_object_terms( $curated_post, cur_get_module_term( 'curator' ), cur_get_tax_slug() );
 
+			do_action( 'cur_curate_item', $post_id );
+
 			return $curated_post;
 		}
 
@@ -467,6 +469,8 @@ class CUR_Curator extends CUR_Singleton {
 			// Remove the associated meta of the curated post ID
 			delete_post_meta( $original_id, $this->curated_meta_slug );
 		}
+
+		do_action( 'cur_uncurate_item', $post_id );
 
 		// Delete the curation post entirely
 		return wp_delete_post( $curated_id, true );
