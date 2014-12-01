@@ -363,6 +363,27 @@ class CUR_Curator extends CUR_Singleton {
 	}
 
 	/**
+	 * Check if a post is curated
+	 *
+	 * @param int $post
+	 *
+	 * @return bool
+	 */
+	public function is_curated( $post = 0 ) {
+		$post = get_post( $post );
+
+		$curated = false;
+
+		// Ensure that we are able to properly get the related ID, if we are then it's curated
+		$curated_post = cur_get_related_id( $post->ID );
+		if ( is_int( $curated_post ) ) {
+			$curated = true;
+		}
+
+		return $curated;
+	}
+
+	/**
 	 * Returns only the curator post type ID. Will determine what post type you're passing.
 	 *
 	 * @param $post_id
@@ -722,6 +743,10 @@ function cur_get_post_types() {
 
 function cur_get_related_id( $post_id ) {
 	return CUR_Curator::factory()->get_related_id( $post_id );
+}
+
+function cur_is_curated( $post = 0 ) {
+	return CUR_Curator::factory()->is_curated( $post );
 }
 
 function cur_get_modules() {
