@@ -30,21 +30,21 @@ class CUR_Tax_Curator extends CUR_Singleton {
 	 */
 	public function register_post_taxonomies() {
 		$labels = array(
-			'name'                       => __( 'Curator Tax', 'fpb' ),
-			'singular_name'              => __( 'Curator Tax', 'fpb' ),
-			'search_items'               => __( 'Search Curator Tax', 'fpb' ),
-			'popular_items'              => __( 'Popular Curator Tax', 'fpb' ),
-			'all_items'                  => __( 'All Curator Tax', 'fpb' ),
-			'parent_item'                => __( 'Parent Curator Tax', 'fpb' ),
-			'parent_item_colon'          => __( 'Parent Curator Tax:', 'fpb' ),
-			'edit_item'                  => __( 'Edit Curator Tax', 'fpb' ),
-			'update_item'                => __( 'Update Curator Tax', 'fpb' ),
-			'add_new_item'               => __( 'Add New Curator Tax', 'fpb' ),
-			'new_item_name'              => __( 'New Curator Tax', 'fpb' ),
-			'separate_items_with_commas' => __( 'Separate Curator Tax with commas', 'fpb' ),
-			'add_or_remove_items'        => __( 'Add or remove Curator Tax', 'fpb' ),
-			'choose_from_most_used'      => __( 'Choose from the most used Curator Tax', 'fpb' ),
-			'menu_name'                  => __( 'Curator Tax', 'fpb' ),
+			'name'                       => __( 'Curator Tax', 'cur' ),
+			'singular_name'              => __( 'Curator Tax', 'cur' ),
+			'search_items'               => __( 'Search Curator Tax', 'cur' ),
+			'popular_items'              => __( 'Popular Curator Tax', 'cur' ),
+			'all_items'                  => __( 'All Curator Tax', 'cur' ),
+			'parent_item'                => __( 'Parent Curator Tax', 'cur' ),
+			'parent_item_colon'          => __( 'Parent Curator Tax:', 'cur' ),
+			'edit_item'                  => __( 'Edit Curator Tax', 'cur' ),
+			'update_item'                => __( 'Update Curator Tax', 'cur' ),
+			'add_new_item'               => __( 'Add New Curator Tax', 'cur' ),
+			'new_item_name'              => __( 'New Curator Tax', 'cur' ),
+			'separate_items_with_commas' => __( 'Separate Curator Tax with commas', 'cur' ),
+			'add_or_remove_items'        => __( 'Add or remove Curator Tax', 'cur' ),
+			'choose_from_most_used'      => __( 'Choose from the most used Curator Tax', 'cur' ),
+			'menu_name'                  => __( 'Curator Tax', 'cur' ),
 		);
 
 		$args = array(

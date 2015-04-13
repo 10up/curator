@@ -350,20 +350,20 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		$menu_icon = apply_filters( 'cur_menu_icon', 'dashicons-schedule' );
 
 		$labels = array(
-			'name'               => _x( 'Curator', 'curator post type general name', 'fpb' ),
-			'singular_name'      => _x( 'Curated Items', 'curator post type singular name', 'fpb' ),
-			'menu_name'          => _x( 'Curator', 'admin menu', 'fpb' ),
-			'name_admin_bar'     => _x( 'Curator', 'add new on admin bar', 'fpb' ),
-			'add_new'            => __( 'Add New', 'add new', 'fpb' ),
-			'add_new_item'       => __( 'Add New Curated Item', 'fpb' ),
-			'new_item'           => __( 'New Curated Item', 'fpb' ),
-			'edit_item'          => __( 'Edit Curated Item', 'fpb' ),
-			'view_item'          => __( 'View Curated Item', 'fpb' ),
-			'all_items'          => __( 'All Curator', 'fpb' ),
-			'search_items'       => __( 'Search Curated Items', 'fpb' ),
-			'parent_item_colon'  => __( 'Parent Curated Item:', 'fpb' ),
-			'not_found'          => __( 'No Curated Items found.', 'fpb' ),
-			'not_found_in_trash' => __( 'No Curated Items found in Trash.', 'fpb' ),
+			'name'               => _x( 'Curator', 'curator post type general name', 'cur' ),
+			'singular_name'      => _x( 'Curated Items', 'curator post type singular name', 'cur' ),
+			'menu_name'          => _x( 'Curator', 'admin menu', 'cur' ),
+			'name_admin_bar'     => _x( 'Curator', 'add new on admin bar', 'cur' ),
+			'add_new'            => __( 'Add New', 'add new', 'cur' ),
+			'add_new_item'       => __( 'Add New Curated Item', 'cur' ),
+			'new_item'           => __( 'New Curated Item', 'cur' ),
+			'edit_item'          => __( 'Edit Curated Item', 'cur' ),
+			'view_item'          => __( 'View Curated Item', 'cur' ),
+			'all_items'          => __( 'All Curator', 'cur' ),
+			'search_items'       => __( 'Search Curated Items', 'cur' ),
+			'parent_item_colon'  => __( 'Parent Curated Item:', 'cur' ),
+			'not_found'          => __( 'No Curated Items found.', 'cur' ),
+			'not_found_in_trash' => __( 'No Curated Items found in Trash.', 'cur' ),
 		);
 
 		$args = array(
@@ -426,15 +426,15 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */
 	public function manage_columns( $columns ) {
 		$new_columns = array(
-			'post_type' => __( 'Post Type', 'fpb' ),
+			'post_type' => __( 'Post Type', 'cur' ),
 		);
 
 		if ( cur_is_module_enabled( 'pinner' ) ) {
-			$new_columns['pinned'] = __( 'Pinned', 'fpb' );
+			$new_columns['pinned'] = __( 'Pinned', 'cur' );
 		}
 
 		if ( cur_is_module_enabled( 'featurer' ) ) {
-			$new_columns['featured'] = __( 'Featured', 'fpb' );
+			$new_columns['featured'] = __( 'Featured', 'cur' );
 		}
 
 		$count = 0;
