@@ -426,10 +426,16 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */
 	public function manage_columns( $columns ) {
 		$new_columns = array(
-			'pinned'    => __( 'Pinned', 'fpb' ),
-			'featured'  => __( 'Featured', 'fpb' ),
 			'post_type' => __( 'Post Type', 'fpb' ),
 		);
+
+		if ( cur_is_module_enabled( 'pinner' ) ) {
+			$new_columns['pinned'] = __( 'Pinned', 'fpb' );
+		}
+
+		if ( cur_is_module_enabled( 'featurer' ) ) {
+			$new_columns['featured'] = __( 'Featured', 'fpb' );
+		}
 
 		$count = 0;
 		if ( ! empty( $columns['cb'] ) ) {
