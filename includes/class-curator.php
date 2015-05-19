@@ -596,7 +596,7 @@ class CUR_Curator extends CUR_Singleton {
 
 				// Do for each post that was found
 				foreach ( $posts as $key => $post ) {
-					$posts[ $key ] = get_post( cur_get_related_id( $post->ID ) );
+					$posts[ $key ] = get_post( apply_filters( 'cur_curated_post_id', cur_get_related_id( $post->ID ) ) );
 				}
 			}
 		}
