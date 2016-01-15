@@ -53,6 +53,25 @@ function cur_init() {
 }
 add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 
+function cur_admin_init() {
+	// Add notice if Simple Page Ordering plugin is not installed
+	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
+		add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin', 900 );
+	}	
+}
+add_action( 'admin_init', 'cur_admin_init' );
+
+/**
+ * Call back function to add notice if simple ordering plugin is not installed.
+ */
+function cur_missing_simple_orderng_plugin(){
+    ?>
+    <div class="error">
+        <p><?php _e( 'For best use, please install and activate the simple ordering plugin', 'cur' ); ?></p>
+    </div>
+    <?php	
+}
+
 /**
  * Activate the plugin
  */
