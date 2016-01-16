@@ -56,7 +56,7 @@ add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 function cur_admin_init() {
 	// Add notice if Simple Page Ordering plugin is not installed
 	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
-		add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin', 900 );
+		add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin');
 	}	
 }
 add_action( 'admin_init', 'cur_admin_init' );
@@ -64,12 +64,20 @@ add_action( 'admin_init', 'cur_admin_init' );
 /**
  * Call back function to add notice if simple ordering plugin is not installed.
  */
-function cur_missing_simple_orderng_plugin(){
-    ?>
-    <div class="error">
-        <p><?php _e( 'For best use, please install and activate the simple ordering plugin', 'cur' ); ?></p>
-    </div>
-    <?php	
+function cur_missing_simple_orderng_plugin() {
+	$msg1 = sprintf(
+		__( '<b>Curator</b>: For best use, please install and activate the %s Simple Page Ordering %s plugin', 'cur' ),
+		'<b><a href ="http://10up.com/plugins/simple-page-ordering-wordpress/">',
+		'</a></b>'
+	);
+
+	$msg2         = __( '<b>Curator</b>: The <b>Simple Page Ordering</b> plugin is not active', 'cur' );
+	$dismiss_bttn = '<a href = "#" class="button">'.__( 'Don\'t show this again', 'cur' ).'</a>';
+	?>
+	<div class="error notice is-dismissible">
+		<p><?php echo $msg1 . ' ' . $dismiss_bttn; ?></p>
+	</div>
+<?php
 }
 
 /**
