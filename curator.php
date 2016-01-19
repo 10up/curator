@@ -56,8 +56,15 @@ add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 function cur_admin_init() {
 	// Add notice if Simple Page Ordering plugin is not installed
 	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
-		add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin');
-	}	
+		
+		if( ! empty( $_GET['dismiss_spo_msg'] ) && '1' === $_GET['dismiss_spo_msg'] ) {
+			update_option( 'dismiss-sop-msg', true );
+		}
+		if ( ! get_option( 'dismiss-sop-msg', false ) ) {
+			add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin');
+		}
+		
+	}
 }
 add_action( 'admin_init', 'cur_admin_init' );
 
@@ -66,9 +73,6 @@ add_action( 'admin_init', 'cur_admin_init' );
  */
 function cur_missing_simple_orderng_plugin() {
 
-	if ( get_option( 'dismiss-sop-msg', false ) ) {
-		return;
-	}
 	$is_installed = get_plugins( '/simple-page-ordering' );
 
 	$activate_msg = sprintf(
@@ -77,7 +81,7 @@ function cur_missing_simple_orderng_plugin() {
 	);
 
 	$install_msg = sprintf(
-		__( 'For best use, please install and activate the %s plugin', 'cur' ),
+		__( 'For best use, please install and activate the %s plugin.', 'cur' ),
 		'<b><a href ="http://10up.com/plugins/simple-page-ordering-wordpress/">Simple Page Ordering</a></b>'
 	);
 
@@ -117,7 +121,7 @@ register_activation_hook( __FILE__, 'cur_activate' );
  * Uninstall routines should be in uninstall.php
  */
 function cur_deactivate() {
-
+	delete_option( 'dismiss-sop-msg' );
 }
 register_deactivation_hook( __FILE__, 'cur_deactivate' );
 
