@@ -65,17 +65,33 @@ add_action( 'admin_init', 'cur_admin_init' );
  * Call back function to add notice if simple ordering plugin is not installed.
  */
 function cur_missing_simple_orderng_plugin() {
-	$msg1 = sprintf(
-		__( '<b>Curator</b>: For best use, please install and activate the %s Simple Page Ordering %s plugin', 'cur' ),
-		'<b><a href ="http://10up.com/plugins/simple-page-ordering-wordpress/">',
-		'</a></b>'
+
+	$is_installed = get_plugins( '/simple-page-ordering' );
+
+	$activate_msg = sprintf(
+		__( 'The %s plugin is not active!', 'cur' ),
+		'<b> Simple Page Ordering </b>'
 	);
 
-	$msg2         = __( '<b>Curator</b>: The <b>Simple Page Ordering</b> plugin is not active', 'cur' );
-	$dismiss_bttn = '<a href = "#" class="button">'.__( 'Don\'t show this again', 'cur' ).'</a>';
+	$install_msg = sprintf(
+		__( 'For best use, please install and activate the %s plugin', 'cur' ),
+		'<b><a href ="http://10up.com/plugins/simple-page-ordering-wordpress/">Simple Page Ordering</a></b>'
+	);
+
+
+	$allowed_html = array(
+		'a' => array(
+			'href'  => array(),
+			'title' => array(),
+		),
+		'b' => array(),
+	);
 	?>
 	<div class="error notice is-dismissible">
-		<p><?php echo $msg1 . ' ' . $dismiss_bttn; ?></p>
+		<p>
+			<b>Curator: </b><?php echo ( $is_installed ) ? wp_kses( $activate_msg, $allowed_html ) : wp_kses( $install_msg, $allowed_html ); ?>
+			&nbsp;&nbsp;<a href="<?php echo add_query_arg( array( 'dismiss_spo_msg'=>1 ) ) ?>"><?php esc_html_e( 'Don\'t show this again.', 'cur' ) ?></a>
+		</p>
 	</div>
 <?php
 }
