@@ -66,6 +66,9 @@ add_action( 'admin_init', 'cur_admin_init' );
  */
 function cur_missing_simple_orderng_plugin() {
 
+	if ( get_option( 'dismiss-sop-msg', false ) ) {
+		return;
+	}
 	$is_installed = get_plugins( '/simple-page-ordering' );
 
 	$activate_msg = sprintf(
