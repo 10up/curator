@@ -61,7 +61,7 @@ function cur_admin_init() {
 			update_option( 'dismiss-sop-msg', true );
 		}
 		if ( ! get_option( 'dismiss-sop-msg', false ) ) {
-			add_action( 'admin_notices', 'cur_missing_simple_orderng_plugin');
+			add_action( 'admin_notices', 'cur_missing_simple_ordering_plugin');
 		}
 		
 	}
@@ -71,7 +71,7 @@ add_action( 'admin_init', 'cur_admin_init' );
 /**
  * Call back function to add notice if simple ordering plugin is not installed.
  */
-function cur_missing_simple_orderng_plugin() {
+function cur_missing_simple_ordering_plugin() {
 
 	$is_installed = get_plugins( '/simple-page-ordering' );
 
