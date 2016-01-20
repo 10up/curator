@@ -54,10 +54,9 @@ function cur_init() {
 add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 
 /**
- * Operations specific to the administrator area.
- * - Handle missing simple page ordering notices.
+ * Determine whether to add an admin notice when simple page ordering plugin is missing.
  */
-function cur_admin_init() {
+function cur_maybe_add_spop_notice() {
 
 	/**
 	 * Filter to allow developers not to show the missing page ordering notice at all.
@@ -77,18 +76,18 @@ function cur_admin_init() {
 				update_option( 'dismiss-spop-msg', true );
 			}
 			if ( ! get_option( 'dismiss-spop-msg', false ) ) {
-				add_action( 'admin_notices', 'cur_missing_simple_ordering_plugin' );
+				add_action( 'admin_notices', 'cur_missing_simple_ordering_notice' );
 			}
 
 		}
 	}
 }
-add_action( 'admin_init', 'cur_admin_init' );
+add_action( 'admin_init', 'cur_maybe_add_spop_notice' );
 
 /**
  * Call back function to add notice if simple ordering plugin is not installed.
  */
-function cur_missing_simple_ordering_plugin() {
+function cur_missing_simple_ordering_notice() {
 
 	$is_installed = get_plugins( '/simple-page-ordering' );
 
