@@ -57,10 +57,10 @@ function cur_admin_init() {
 	// Add notice if Simple Page Ordering plugin is not installed
 	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
 		
-		if( ! empty( $_GET['dismiss_spo_msg'] ) && '1' === $_GET['dismiss_spo_msg'] ) {
-			update_option( 'dismiss-sop-msg', true );
+		if( ! empty( $_GET['dismiss_spop_msg'] ) && '1' === $_GET['dismiss_spop_msg'] ) {
+			update_option( 'dismiss-spop-msg', true );
 		}
-		if ( ! get_option( 'dismiss-sop-msg', false ) ) {
+		if ( ! get_option( 'dismiss-spop-msg', false ) ) {
 			add_action( 'admin_notices', 'cur_missing_simple_ordering_plugin');
 		}
 		
@@ -97,7 +97,7 @@ function cur_missing_simple_ordering_plugin() {
 	<div class="error notice is-dismissible">
 		<p>
 			<b>Curator: </b><?php echo ( $is_installed ) ? wp_kses( $activate_msg, $allowed_html ) : wp_kses( $install_msg, $allowed_html ); ?>
-			&nbsp;&nbsp;<a href="<?php echo add_query_arg( array( 'dismiss_spo_msg'=>1 ) ) ?>"><?php esc_html_e( 'Don\'t show this again.', 'cur' ) ?></a>
+			&nbsp;&nbsp;<a href="<?php echo add_query_arg( array( 'dismiss_spop_msg'=>1 ) ) ?>"><?php esc_html_e( 'Don\'t show this again.', 'cur' ) ?></a>
 		</p>
 	</div>
 <?php
@@ -121,7 +121,7 @@ register_activation_hook( __FILE__, 'cur_activate' );
  * Uninstall routines should be in uninstall.php
  */
 function cur_deactivate() {
-	delete_option( 'dismiss-sop-msg' );
+	delete_option( 'dismiss-spop-msg' );
 }
 register_deactivation_hook( __FILE__, 'cur_deactivate' );
 
