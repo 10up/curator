@@ -57,7 +57,7 @@ function cur_admin_init() {
 	// Add notice if Simple Page Ordering plugin is not installed
 	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
 		
-		if( ! empty( $_GET['dismiss_spo_msg'] ) && '1' === $_GET['dismiss_spo_msg'] ) {
+		if( ! empty( $_GET['dismiss_sop_msg'] ) && '1' === $_GET['dismiss_sop_msg'] ) {
 			update_option( 'dismiss-sop-msg', true );
 		}
 		if ( ! get_option( 'dismiss-sop-msg', false ) ) {
@@ -97,7 +97,7 @@ function cur_missing_simple_ordering_plugin() {
 	<div class="error notice is-dismissible">
 		<p>
 			<b>Curator: </b><?php echo ( $is_installed ) ? wp_kses( $activate_msg, $allowed_html ) : wp_kses( $install_msg, $allowed_html ); ?>
-			&nbsp;&nbsp;<a href="<?php echo add_query_arg( array( 'dismiss_spo_msg'=>1 ) ) ?>"><?php esc_html_e( 'Don\'t show this again.', 'cur' ) ?></a>
+			&nbsp;&nbsp;<a href="<?php echo add_query_arg( array( 'dismiss_sop_msg'=>1 ) ) ?>"><?php esc_html_e( 'Don\'t show this again.', 'cur' ) ?></a>
 		</p>
 	</div>
 <?php
