@@ -67,7 +67,7 @@ function cur_maybe_add_spop_notice() {
 	 */
 	$show_spop_notice = apply_filters( 'cur_show_missing_spop_notification', true );
 
-	if ( ! $show_spop_notice ) {
+	if ( false === $show_spop_notice ) {
 		return;
 	}
 	
