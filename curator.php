@@ -53,17 +53,34 @@ function cur_init() {
 }
 add_action( 'wp_loaded', 'cur_setup_default_terms', 900 );
 
+/**
+ * Operations specific to the administrator area.
+ * - Handle missing simple page ordering notices.
+ */
 function cur_admin_init() {
-	// Add notice if Simple Page Ordering plugin is not installed
-	if( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
-		
-		if( ! empty( $_GET['dismiss_spop_msg'] ) && '1' === $_GET['dismiss_spop_msg'] ) {
-			update_option( 'dismiss-spop-msg', true );
+
+	/**
+	 * Filter to allow developers not to show the missing page ordering notice at all.
+	 *
+	 * Passing a false value to the filter will short-circuit showing the missing page ordering plugin notice.
+	 *
+	 * @param bool $show_spop_notice Value set for the option.
+	 */
+	$show_spop_notice = apply_filters( 'cur_show_missing_spop_notification', true );
+
+	if ( $show_spop_notice ) {
+
+		// Add notice if Simple Page Ordering plugin is not installed
+		if ( ! is_plugin_active( 'simple-page-ordering/simple-page-ordering.php' ) ) {
+
+			if ( ! empty( $_GET['dismiss_spop_msg'] ) && '1' === $_GET['dismiss_spop_msg'] ) {
+				update_option( 'dismiss-spop-msg', true );
+			}
+			if ( ! get_option( 'dismiss-spop-msg', false ) ) {
+				add_action( 'admin_notices', 'cur_missing_simple_ordering_plugin' );
+			}
+
 		}
-		if ( ! get_option( 'dismiss-spop-msg', false ) ) {
-			add_action( 'admin_notices', 'cur_missing_simple_ordering_plugin');
-		}
-		
 	}
 }
 add_action( 'admin_init', 'cur_admin_init' );
