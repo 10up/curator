@@ -168,7 +168,43 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$this->assertEquals( false, cur_is_featured( $post_id ) );
 	}
 	
-	public function testPinItem() {
+	/**
+	 * Test pin and un-pin a curated post
+	 *
+	 * @since 0.2.1
+	 */	
+	public function testPinning() {
+		$post_id = cur_create_post();
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+		
+		// Pin item
+		cur_pin_item( $curated_post );
+
+		$option_slug = cur_get_pinner_option_slug();		
+		$pinned_items = get_option( $option_slug, [] );
+		
+		// Our new curated post should be on the top of the pinned stack.			
+		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
+		$this->assertEquals( $expected, $curated_post );
+		
+		// Unpin Item;
+		cur_unpin_item( $curated_post );
+		$pinned_items = get_option( $option_slug, [] );
+		
+		// Test that item is nolonger in the pinned items.
+		$this->assertFalse( in_array( $curated_post, $pinned_items ) );
+		
+	}
+		
+
+	/**
+	 * Test pin a curated post by saving post action.
+	 *
+	 * @since 0.2.1
+	 */	
+	public function testPinItemOnSave() {
 		// Create a user with admin role.
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $user_id );
@@ -192,14 +228,11 @@ class CURTestSingleSite extends CUR_Test_Base {
 		
 		
 		$option_slug = cur_get_pinner_option_slug();
-		$pinned_items = get_option( $option_slug );
-		
-		// Pinned items should be an array.
-		$this->assertTrue( is_array( $pinned_items ) );
+		$pinned_items = get_option( $option_slug, [] );
 		
 		// Our new curated post should be on the top of the pinned stack.			
-		$expected = is_array( $pinned_items ) ? array_shift( $pinned_items ) : '';
+		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
 		$this->assertEquals( $expected, $curated_post );					
-	}
+	}	
 	
 }
