@@ -167,4 +167,29 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Test that the item is not featured
 		$this->assertEquals( false, cur_is_featured( $post_id ) );
 	}
+	
+	public function testPinItem() {
+		// Create a user with admin role.
+		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		
+		// Simulate Pin item required data and nonce
+		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
+		$_POST['cur-pinned-item'] = 'on';
+					
+		$post_id = cur_create_post();
+	
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+		
+		// Create control post to be updated and saved.
+		$control_post = get_post( $post_id , ARRAY_A );		
+		$control_post['post_title'] ='Pinned post';
+				
+		// Induce saving action
+		$control_post_id = wp_update_post( $control_post );	
+			
+		
+	}
 }
