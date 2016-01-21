@@ -188,8 +188,18 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$control_post['post_title'] ='Pinned post';
 				
 		// Induce saving action
-		$control_post_id = wp_update_post( $control_post );	
-			
+		$control_post_id = wp_update_post( $control_post );
 		
+		
+		$option_slug = cur_get_pinner_option_slug();
+		$pinned_items = get_option( $option_slug );
+		
+		// Pinned items should be an array.
+		$this->assertTrue( is_array( $pinned_items ) );
+		
+		// Our new curated post should be on the top of the pinned stack.			
+		$expected = is_array( $pinned_items ) ? array_shift( $pinned_items ) : '';
+		$this->assertEquals( $expected, $curated_post );					
 	}
+	
 }
