@@ -168,6 +168,58 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$this->assertEquals( false, cur_is_featured( $post_id ) );
 	}
 	
+	
+	
+	/**
+	 * Test get_featured_size function.
+	 *
+	 * @since 0.2.1
+	 */	
+	public function testGetFeaturedSize() {
+		
+		// Create a user with admin role.
+		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		
+		// Simulate required data and nonce
+		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
+		$_POST['cur-curated-item'] = 'on';
+		$_POST['cur-featured-item'] = 'on';
+		$_POST['cur-featurer-size'] = 7;
+					
+		$post_id = cur_create_post();
+	
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+		
+		$term_args    = array(
+	                    'term_name' => 'Feature',
+					    'term_slug' => 'cur-featured-item',
+					    );
+						
+		cur_add_test_term( $curated_post, cur_get_tax_slug(), $term_args );
+		
+		// Create control post to be updated and saved.
+		$control_post = get_post( $post_id , ARRAY_A );		
+		$control_post['post_title'] ='Updated Post';
+
+		// Induce saving action
+		$control_post_id = wp_update_post( $control_post );		
+			
+		// Add Featured sizes;
+		
+		// Expected.
+		$expected = 7;
+		
+		// Returned
+		$returned = cur_get_featured_size( $curated_post );
+		
+		// Test that the expected is equal to the returned.
+		$this->assertEquals( $expected, $returned );
+		
+	}
+	
 	/**
 	 * Test pin and un-pin a curated post
 	 *
@@ -234,5 +286,5 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
 		$this->assertEquals( $expected, $curated_post );					
 	}	
-	
+		
 }

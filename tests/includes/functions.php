@@ -96,10 +96,14 @@ function cur_add_test_term( $post_id, $taxonomy, $args ) {
 	extract( $args, EXTR_OVERWRITE );
 	
 	$factory = new Cur_Term_Factory( $taxonomy );
+	$term = get_term_by('slug', $term_slug, $taxonomy );
 		
-	if ( ! term_exists( $term_slug, $taxonomy ) ) {
-		$term = $factory->create( array( 'name' => $term_name, 'slug'=>$term_slug ) );
+	if ( ! $term ) {
+		$term_id = $factory->create( array( 'name' => $term_name, 'slug'=>$term_slug ) );
+	}else {
+		$term_id = $term->term_id;
 	}
+	
 
-	$factory->add_post_terms( $post_id, array( $term ), $taxonomy ); 	
+	$factory->add_post_terms( $post_id, array( $term_id ), $taxonomy ); 	
 }
