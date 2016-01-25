@@ -107,18 +107,23 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$this->assertEquals( null, get_post( $curated_post ) );
 	}
 	
-    public function testIsCurated( $post = 0 ) {
+	/**
+	 * Test if test for post curation works
+	 *
+	 * @since 0.2.1
+	 */
+	public function testIsCurated() {
 		$post_id = cur_create_post();
-		
+
 		// Test if post is curated before we curate it.	
 		$this->assertEquals( false, cur_is_curated( $post_id ) );
 
 		// Curate the post
 		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
-		
+
 		// Test if post is curated after we curate it.	
-		$this->assertEquals( true, cur_is_curated( $post_id ) );		
-    }	
+		$this->assertEquals( true, cur_is_curated( $post_id ) );
+	}		
 
 	/**
 	 * Test post uncuration by unpublishing an original post
@@ -181,123 +186,120 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$this->assertEquals( false, cur_is_featured( $post_id ) );
 	}
 	
-	
-	
 	/**
 	 * Test get_featured_size function.
 	 *
 	 * @since 0.2.1
-	 */	
+	 */
 	public function testGetFeaturedSize() {
-		
+
 		// Create a user with admin role.
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $user_id );
-		
+
 		// Simulate required data and nonce
 		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
-		$_POST['cur-curated-item']  = 'on';
-		$_POST['cur-featured-item'] = 'on';
-		$_POST['cur-featurer-size'] = '1x3';
-					
+		$_POST['cur-curated-item']      = 'on';
+		$_POST['cur-featured-item']     = 'on';
+		$_POST['cur-featurer-size']     = '1x3';
+
 		$post_id = cur_create_post();
-	
+
 
 		// Curate the post
 		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
-		
-		$term_args    = array(
-	                    'term_name' => 'Feature',
-					    'term_slug' => 'cur-featured-item',
-					    );
-						
+
+		$term_args = array(
+			'term_name' => 'Feature',
+			'term_slug' => 'cur-featured-item',
+		);
+
 		cur_add_test_term( $curated_post, cur_get_tax_slug(), $term_args );
-		
+
 		// Create control post to be updated and saved.
-		$control_post = get_post( $post_id , ARRAY_A );		
-		$control_post['post_title'] ='Updated Post';		
+		$control_post               = get_post( $post_id, ARRAY_A );
+		$control_post['post_title'] = 'Updated Post';
 
 		// Induce saving action
-		$control_post_id = wp_update_post( $control_post );		
-			
+		$control_post_id = wp_update_post( $control_post );
+
 		// Add Featured sizes;
-		
+
 		// Expected.
 		$expected = '1x3';
-		
+
 		// Returned
 		$returned = cur_get_featured_size( $curated_post );
-		
+
 		// Test that the expected is equal to the returned.
 		$this->assertEquals( $expected, $returned );
-		
+
 	}
 	
 	/**
 	 * Test pin and un-pin a curated post
 	 *
 	 * @since 0.2.1
-	 */	
+	 */
 	public function testPinning() {
 		$post_id = cur_create_post();
 
 		// Curate the post
 		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
-		
+
 		// Pin item
 		cur_pin_item( $curated_post );
 
-		$option_slug = cur_get_pinner_option_slug();		
-		$pinned_items = get_option( $option_slug, [] );
-		
+		$option_slug  = cur_get_pinner_option_slug();
+		$pinned_items = get_option( $option_slug, [ ] );
+
 		// Our new curated post should be on the top of the pinned stack.			
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
 		$this->assertEquals( $expected, $curated_post );
-		
+
 		// Unpin Item;
 		cur_unpin_item( $curated_post );
-		$pinned_items = get_option( $option_slug, [] );
-		
+		$pinned_items = get_option( $option_slug, [ ] );
+
 		// Test that item is nolonger in the pinned items.
 		$this->assertFalse( in_array( $curated_post, $pinned_items ) );
-		
+
 	}
 		
-
 	/**
 	 * Test pin a curated post by saving post action.
 	 *
 	 * @since 0.2.1
-	 */	
+	 */
 	public function testPinItemOnSave() {
 		// Create a user with admin role.
 		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $user_id );
-		
+
 		// Simulate Pin item required data and nonce
 		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
-		$_POST['cur-pinned-item'] = 'on';
-					
+		$_POST['cur-pinned-item']       = 'on';
+
 		$post_id = cur_create_post();
-	
+
 
 		// Curate the post
 		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
-		
+
 		// Create control post to be updated and saved.
-		$control_post = get_post( $post_id , ARRAY_A );		
-		$control_post['post_title'] ='Pinned post';
-				
+		$control_post               = get_post( $post_id, ARRAY_A );
+		$control_post['post_title'] = 'Pinned post';
+
 		// Induce saving action
 		$control_post_id = wp_update_post( $control_post );
-		
-		
-		$option_slug = cur_get_pinner_option_slug();
-		$pinned_items = get_option( $option_slug, [] );
-		
+
+
+		$option_slug  = cur_get_pinner_option_slug();
+		$pinned_items = get_option( $option_slug, [ ] );
+
 		// Our new curated post should be on the top of the pinned stack.			
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
-		$this->assertEquals( $expected, $curated_post );					
+		$this->assertEquals( $expected, $curated_post );
 	}	
 		
 }
