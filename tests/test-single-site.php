@@ -183,9 +183,9 @@ class CURTestSingleSite extends CUR_Test_Base {
 		
 		// Simulate required data and nonce
 		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
-		$_POST['cur-curated-item'] = 'on';
+		$_POST['cur-curated-item']  = 'on';
 		$_POST['cur-featured-item'] = 'on';
-		$_POST['cur-featurer-size'] = 7;
+		$_POST['cur-featurer-size'] = '1x3';
 					
 		$post_id = cur_create_post();
 	
@@ -202,7 +202,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 		
 		// Create control post to be updated and saved.
 		$control_post = get_post( $post_id , ARRAY_A );		
-		$control_post['post_title'] ='Updated Post';
+		$control_post['post_title'] ='Updated Post';		
 
 		// Induce saving action
 		$control_post_id = wp_update_post( $control_post );		
@@ -210,7 +210,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Add Featured sizes;
 		
 		// Expected.
-		$expected = 7;
+		$expected = '1x3';
 		
 		// Returned
 		$returned = cur_get_featured_size( $curated_post );
