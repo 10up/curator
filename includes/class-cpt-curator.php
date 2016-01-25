@@ -46,6 +46,8 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_filter( 'get_edit_post_link', array( $this, 'filter_edit_post_link' ), 10, 3 );
 
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
+		
+		add_filter( 'page_row_actions', array( $this, 'filter_edit_trash_link' ), 10, 2 );
 	}
 
 	/**
@@ -411,6 +413,42 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 
 		return $edit_link;
+	}
+
+	/**
+	 * Modify the curator post edit link to point to the original post
+	 *
+	 * @param $edit_link
+	 * @param $post_id
+	 * @param $context
+	 *
+	 * @return mixed
+	 * @since 0.1.0
+	 */	
+	public function filter_edit_trash_link( $actions, $post ){
+		
+		if( 'cur-curator' !== $post->post_type ){
+			return;
+		}
+		
+		if ( ! current_user_can( 'delete_post', $post->ID ) ) {
+			return;
+		}
+		
+		if( ! isset( $actions['trash'] ) ) {
+			return;
+		}
+			
+		if ( EMPTY_TRASH_DAYS ) {
+			$actions['trash'] = "<a class='submitdelete' title='" . esc_attr__( 'Uncurate this item' ) . "' href='" . get_delete_post_link( $post->ID ) . "'>" . __( 'Uncurate' ) . "</a>";
+		}
+		
+		if( isset( $actions['inline hide-if-no-js'] ) ) {
+			unset( $actions['inline hide-if-no-js'] );
+		}
+			
+		return $actions;
+		
 	}
 
 	/**
