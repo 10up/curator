@@ -106,6 +106,19 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Ensure that the curated post is completely gone
 		$this->assertEquals( null, get_post( $curated_post ) );
 	}
+	
+    public function testIsCurated( $post = 0 ) {
+		$post_id = cur_create_post();
+		
+		// Test if post is curated before we curate it.	
+		$this->assertEquals( false, cur_is_curated( $post_id ) );
+
+		// Curate the post
+		$curated_post = cur_curate_post( $post_id, get_post( $post_id ) );
+		
+		// Test if post is curated after we curate it.	
+		$this->assertEquals( true, cur_is_curated( $post_id ) );		
+    }	
 
 	/**
 	 * Test post uncuration by unpublishing an original post
