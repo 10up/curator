@@ -416,16 +416,15 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	}
 
 	/**
-	 * Modify the curator post edit link to point to the original post
+	 * Modify the curator post trash link to read uncurate and removed the edit inline link.
 	 *
-	 * @param $edit_link
-	 * @param $post_id
-	 * @param $context
+	 * @param $actions
+	 * @param $post
 	 *
 	 * @return mixed
 	 * @since 0.1.0
 	 */	
-	public function filter_edit_trash_link( $actions, $post ){
+	public function filter_edit_trash_link( $actions, $post ) {
 		
 		if( 'cur-curator' !== $post->post_type ){
 			return;
