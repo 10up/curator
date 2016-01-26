@@ -442,7 +442,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 			
 		if ( EMPTY_TRASH_DAYS ) {
-			$actions['trash'] = "<a class='submitdelete' title='" . esc_attr__( 'Uncurate this item' ) . "' href='" . get_delete_post_link( $post->ID ) . "'>" . __( 'Uncurate' ) . "</a>";
+			$actions['trash'] = "<a class='submitdelete' title='" . esc_attr__( 'Uncurate this item', 'cur' ) . "' href='" . get_delete_post_link( $post->ID ) . "'>" . __( 'Uncurate', 'cur' ) . "</a>";
 		}
 		
 		if( isset( $actions['inline hide-if-no-js'] ) ) {
@@ -453,21 +453,29 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		
 	}
 	
+	/**
+	 * Modify the curator post trash notification messages.
+	 *
+	 * @param $bulk_messages
+	 * @param $bulk_counts
+	 *
+	 * @return array
+	 */
 	public function filter_edit_trash_msgs( $bulk_messages, $bulk_counts ) {
-		
+
 		global $typenow;
-		
-		if( 'cur-curator' !== $typenow ){
-			return;
-		}		
-		
-		if( empty( $bulk_messages['page']['trashed'] ) ) {
+
+		if ( 'cur-curator' !== $typenow ) {
 			return;
 		}
-		
-		$bulk_messages['post']['trashed'] = _n( '%s item uncurated.', '%s items uncurated.', $bulk_counts['trashed'] );
-		
-		return  $bulk_messages;
+
+		if ( empty( $bulk_messages['page']['trashed'] ) ) {
+			return;
+		}
+
+		$bulk_messages['post']['trashed'] = _n( '%s item uncurated.', '%s items uncurated.', $bulk_counts['trashed'], 'cur' );
+
+		return $bulk_messages;
 
 	}
 
