@@ -221,8 +221,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 				}
 			}
 
-			// Only run other modules if this post has been curated
+			// Only run this code if this post has been curated
 			if ( false !== $curated_post ) {
+				$this->maybe_update_curated_post( $post );
 				$this->run_modules_on_save( $post );
 			}
 		}
@@ -322,6 +323,28 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			cur_set_item_modules( $set_modules, $curated_post );
 		}
 
+	}
+	
+	/**
+	 * Update curated post title when original post title changes.
+	 *
+	 * @param $post
+	 */
+	function maybe_update_curated_post( $post ) {
+
+		$curated_post = cur_get_curated_post( $post->ID );
+		// Only run other modules if this post has been curated
+		if ( ! $curated_post ) {
+			return;
+		}
+
+		$curated_post_arr = get_post( $curated_post, ARRAY_A );
+
+		if ( $curated_post_arr['post_title'] !== $post->post_title ) {
+			$curated_post_arr['post_title'] = $post->post_title;
+			wp_update_post( $curated_post_arr );
+
+		}
 	}
 
 	/**
