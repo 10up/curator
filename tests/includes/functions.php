@@ -77,3 +77,33 @@ function cur_create_post( $post_args = array(), $post_meta = array(), $site_id =
 
 	return $post_id;
 }
+
+/**
+ * Add Terms to a post object
+ *
+ * @param int    $post_id       The post Id to add the term to.
+ * @param array  $args          Term arguments array.
+ */
+function cur_add_test_term( $post_id, $taxonomy, $args ) {
+	
+	$default_args = array(
+	                'term_name' => 'Test term',
+					'term_slug' => 'test_term',
+					);
+					
+	$args = array_merge( $default_args, array_intersect_key( $args, $default_args ) );
+	
+	extract( $args, EXTR_OVERWRITE );
+	
+	$factory = new Cur_Term_Factory( $taxonomy );
+	$term = get_term_by('slug', $term_slug, $taxonomy );
+		
+	if ( ! $term ) {
+		$term_id = $factory->create( array( 'name' => $term_name, 'slug'=>$term_slug ) );
+	}else {
+		$term_id = $term->term_id;
+	}
+	
+
+	$factory->add_post_terms( $post_id, array( $term_id ), $taxonomy ); 	
+}
