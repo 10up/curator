@@ -251,7 +251,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 		cur_pin_item( $curated_post );
 
 		$option_slug  = cur_get_pinner_option_slug();
-		$pinned_items = get_option( $option_slug, [ ] );
+		$pinned_items = get_option( $option_slug, array() );
 
 		// Our new curated post should be on the top of the pinned stack.			
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
@@ -259,7 +259,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 
 		// Unpin Item;
 		cur_unpin_item( $curated_post );
-		$pinned_items = get_option( $option_slug, [ ] );
+		$pinned_items = get_option( $option_slug, array() );
 
 		// Test that item is nolonger in the pinned items.
 		$this->assertFalse( in_array( $curated_post, $pinned_items ) );
