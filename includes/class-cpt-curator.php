@@ -48,6 +48,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
 		
 		add_filter( 'page_row_actions', array( $this, 'filter_edit_trash_link' ), 10, 2 );
+		
+		add_filter( 'bulk_post_updated_messages', array( $this, 'filter_edit_trash_msgs' ), 10, 2 );
+				
 	}
 
 	/**
@@ -448,6 +451,24 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			
 		return $actions;
 		
+	}
+	
+	public function filter_edit_trash_msgs( $bulk_messages, $bulk_counts ) {
+		
+		global $typenow;
+		
+		if( 'cur-curator' !== $typenow ){
+			return;
+		}		
+		
+		if( empty( $bulk_messages['page']['trashed'] ) ) {
+			return;
+		}
+		
+		$bulk_messages['post']['trashed'] = _n( '%s item uncurated.', '%s items uncurated.', $bulk_counts['trashed'] );
+		
+		return  $bulk_messages;
+
 	}
 
 	/**
