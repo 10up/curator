@@ -295,7 +295,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 
 
 		$option_slug  = cur_get_pinner_option_slug();
-		$pinned_items = get_option( $option_slug, [ ] );
+		$pinned_items = get_option( $option_slug, array() );
 
 		// Our new curated post should be on the top of the pinned stack.			
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';
