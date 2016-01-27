@@ -178,6 +178,14 @@ class CUR_Curator extends CUR_Singleton {
 	 * @since 0.1.0
 	 */
 	public function curate_post( $post_id, $post ) {
+		
+		$curated_post = cur_get_curated_post( $post_id );
+		// This post is already curated.
+		if ( $curated_post ) {		
+			$this->update_curation_status( $curated_post, 'live' );		
+			return;	
+		}
+				
 
 		// Create a post and add in as meta the original post's ID
 		// @todo Get top ordered posts and place on top (via menu_order)
@@ -225,6 +233,18 @@ class CUR_Curator extends CUR_Singleton {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Set the curation status of a post
+	 *
+	 * @param $post
+	 * @param $status
+	 * @since 0.2.0
+	 */	
+	public function update_curation_status( $post, $status = '' ) {
+		$status = ( 'live' === $status ) ? $status : 'trash';
+		update_post_meta( $post, $this->curated_meta_slug.'_status', $status );
 	}
 
 	/**
