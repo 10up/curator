@@ -182,7 +182,7 @@ class CUR_Curator extends CUR_Singleton {
 		$curated_post = cur_get_curated_post( $post_id );
 		// This post is already curated.
 		if ( $curated_post ) {	
-			$this->update_curation_status( $curated_post );		
+			cur_update_curation_status( $curated_post );		
 			return;	
 		}
 				

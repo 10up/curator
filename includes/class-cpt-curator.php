@@ -87,9 +87,16 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */
 	public function trashed_post( $post_id ) {
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
+			
+			$curated_post = get_curated_post( $post_id = 0 );
+			
+			
+			if ( false !== $curated_post && is_int( $curated_post ) && $post_id !== $curated_post ) {
+				cur_update_curation_status( $post_id, true );
+			}
 
-			// Get the ID of the main item, and then use the same removal/disconnect method
-			cur_uncurate_item( $post_id );
+		}else {
+			cur_update_curation_status( $post_id, true );		
 		}
 	}
 
