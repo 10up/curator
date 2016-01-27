@@ -242,7 +242,7 @@ class CUR_Curator extends CUR_Singleton {
 	 * @param $status
 	 * @since 0.2.0
 	 */	
-	public function update_curation_status( $post_id, $trashed = false ) {
+	public function cur_update_curation_status( $post_id, $trashed = false ) {
 		
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 			$status = ( $trashed ) ? 'trashed' : 'live';			
@@ -797,6 +797,11 @@ function cur_uncurate_item( $post_id ) {
 
 function cur_curate_post( $post_id, $post ) {
 	return CUR_Curator::factory()->curate_post( $post_id, $post );
+}
+
+
+function cur_update_curation_status( $post_id, $trashed = false ) {
+	return CUR_Curator::factory()->update_curation_status( $post_id, $trashed );
 }
 
 function cur_get_pinner_option_slug() {
