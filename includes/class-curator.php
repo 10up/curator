@@ -181,7 +181,7 @@ class CUR_Curator extends CUR_Singleton {
 		
 		$curated_post = cur_get_curated_post( $post_id );
 		// This post is already curated.
-		if ( $curated_post ) {		
+		if ( $curated_post ) {	
 			$this->update_curation_status( $curated_post );		
 			return;	
 		}
@@ -245,9 +245,9 @@ class CUR_Curator extends CUR_Singleton {
 	public function update_curation_status( $post_id, $trashed = false ) {
 		
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
-			$status = ( $trashed ) ? 'original:trashed' : 'live';	
+			$status = ( $trashed ) ? 'trashed' : 'live';			
 		}else {
-			$status = ( $trashed ) ? 'original:trashed' : 'live';		
+			$status = ( $trashed ) ? 'original:trashed' : 'live';
 		}
 		
 		update_post_meta( $post_id, $this->curated_meta_slug.'_status', $status );
