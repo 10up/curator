@@ -92,11 +92,15 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			
 			
 			if ( false !== $curated_post && is_int( $curated_post ) && $post_id !== $curated_post ) {
-				cur_update_curation_status( $post_id, true );
+				cur_update_curation_status( $curated_post, true );
 			}
 
 		}else {
-			cur_update_curation_status( $post_id, true );		
+			
+			if( cur_is_curated( $post_id ) ) {
+				cur_update_curation_status( $post_id, true );
+			}
+					
 		}
 	}
 
