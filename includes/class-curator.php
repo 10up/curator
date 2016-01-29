@@ -248,10 +248,10 @@ class CUR_Curator extends CUR_Singleton {
 	 */	
 	public function update_curation_status( $post_id, $trashed = false ) {
 		
-		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
-			return;					
+		if( ! in_array( get_post_type( $post_id ), cur_get_post_types() ) &&  cur_get_cpt_slug() !== get_post_type( $post_id )  ) {
+			return;
 		}
-		
+				
 		$status = ( $trashed ) ? 'trash' : 'live';
 		
 		update_post_meta( $post_id, $this->curated_meta_slug.'_status', $status );
