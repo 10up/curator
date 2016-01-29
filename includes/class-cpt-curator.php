@@ -41,6 +41,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
 
 		add_action( 'trashed_post', array( $this, 'trashed_post' ), 200 );
+		add_action( 'untrash_post', array( $this, 'untrash_post' ) );
 
 		// Modify the edit post link to go directly to the original item
 		add_filter( 'get_edit_post_link', array( $this, 'filter_edit_post_link' ), 10, 3 );
@@ -81,7 +82,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	}
 
 	/**
-	 * Disable the trash for this post type, as it just confuses things
+	 * Add trash statuses in both the original and curated post meta when curated post is trashed.
 	 *
 	 * @param $post_id
 	 */
@@ -101,6 +102,27 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			cur_uncurate_item( $post_id );						
 				
 		}				
+		
+	}
+	
+	/**
+	 * Update trash statuses to live in both the original and curated post meta when curated post is untrashed.
+	 *
+	 * @param $post_id
+	 */	
+	function untrash_post(){
+		
+		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
+			
+			$original_post = cur_get_original_post( $post_id );
+			
+			if( $original_post !== $post_id ) {
+			
+				cur_update_curation_status( $post_id, false );
+				cur_update_curation_status( $original_post, false );
+			}
+
+		}
 		
 	}
 
