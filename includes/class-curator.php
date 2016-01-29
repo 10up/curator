@@ -252,7 +252,7 @@ class CUR_Curator extends CUR_Singleton {
 			return;					
 		}
 		
-		$status = ( $trashed ) ? 'trashed' : 'live';
+		$status = ( $trashed ) ? 'trash' : 'live';
 		
 		update_post_meta( $post_id, $this->curated_meta_slug.'_status', $status );
 	}
