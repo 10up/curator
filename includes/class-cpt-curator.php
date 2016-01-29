@@ -88,20 +88,20 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	public function trashed_post( $post_id ) {
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 			
-			$curated_post = get_curated_post( $post_id = 0 );
+			$original_post = cur_get_original_post( $post_id );
 			
+			if( $original_post !== $post_id ) {
 			
-			if ( false !== $curated_post && is_int( $curated_post ) && $post_id !== $curated_post ) {
-				cur_update_curation_status( $curated_post, true );
+				cur_update_curation_status( $post_id, true );
+				cur_update_curation_status( $original_post, true );
 			}
 
 		}else {
-			
-			if( cur_is_curated( $post_id ) ) {
-				cur_update_curation_status( $post_id, true );
-			}
-					
-		}
+			// If the original post is trashed, delete the curated post otherwise leaving it in the curated list can be deceptive.
+			cur_uncurate_item( $post_id );						
+				
+		}				
+		
 	}
 
 	/**
