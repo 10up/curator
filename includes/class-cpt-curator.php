@@ -112,13 +112,12 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */	
 	function untrash_post( $post_id ) {
 		
+		
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 			
 			$original_post = cur_get_original_post( $post_id );
 			
-			if( $original_post !== $post_id ) {
-			
-				cur_update_curation_status( $post_id, false );
+			if( $original_post !== $post_id ) {			
 				cur_update_curation_status( $original_post, false );
 			}
 

@@ -181,8 +181,12 @@ class CUR_Curator extends CUR_Singleton {
 		
 		$curated_post = cur_get_curated_post( $post_id );
 		// This post is already curated.
-		if ( $curated_post ) {	
-			cur_update_curation_status( $curated_post );		
+		if ( $curated_post ) {
+			$curated_post_obj = get_post( $curated_post );
+			if( 'trash' === $curated_post_obj->post_status ) {
+				wp_untrash_post( $curated_post ) {			
+				cur_update_curation_status( $post_id, false );
+			}
 			return;	
 		}
 				
