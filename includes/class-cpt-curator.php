@@ -110,7 +110,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 *
 	 * @param $post_id
 	 */	
-	function untrash_post(){
+	function untrash_post( $post_id ) {
 		
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
 			
