@@ -151,7 +151,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		$curated_post = cur_get_curated_post( $post->ID );
 
 		if ( false !== $curated_post ) {
-			$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+			if( 'trash' !== get_post_meta( $post->ID, $this->curated_meta_slug.'_status' ) ) {
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );	
+			}	
 		}
 
 		foreach ( $modules as $module => $module_info ) {
