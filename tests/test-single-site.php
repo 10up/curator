@@ -279,6 +279,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 		// Simulate Pin item required data and nonce
 		$_POST['cur_curate_item_nonce'] = wp_create_nonce( 'cur_curate_item' );
 		$_POST['cur-pinned-item']       = 'on';
+		$_POST['cur-curated-item']      = 'on';
 
 		$post_id = cur_create_post();
 
@@ -295,7 +296,7 @@ class CURTestSingleSite extends CUR_Test_Base {
 
 
 		$option_slug  = cur_get_pinner_option_slug();
-		$pinned_items = get_option( $option_slug, array() );
+		$pinned_items = get_option( $option_slug );
 
 		// Our new curated post should be on the top of the pinned stack.			
 		$expected = is_array( $pinned_items ) ? $pinned_items[0] : '';

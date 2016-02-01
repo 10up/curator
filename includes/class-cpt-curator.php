@@ -236,7 +236,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 */	
 	public function run_modules_on_save( $post ) {
 
-		if ( 1 !== did_action( 'save_post' ) ) {
+		if ( 0 == did_action( 'save_post' ) ) {
 			return;
 		}
 
