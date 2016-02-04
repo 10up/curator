@@ -13,6 +13,8 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$wpdb->suppress_errors();
 
 		$this->setup_test_post_type();
+		$this->curated_meta_slug = '_curator_related_id';
+		
 	}
 
 	/**
@@ -98,13 +100,16 @@ class CURTestSingleSite extends CUR_Test_Base {
 		$this->assertEquals( $post_id, cur_get_related_id( $curated_post ) );
 		$this->assertEquals( $curated_post, cur_get_related_id( $post_id ) );
 
-		// Uncurate post by deleting the curated item
+		// Trashing the curated post should leave the curated meta intact.
 		wp_trash_post( $curated_post );
 
-		$this->assertEquals( false, cur_get_curated_post( $post_id ) );
+		$this->assertEquals( $curated_post, cur_get_curated_post( $post_id ) );
+		
+		$status = get_post_meta( $post_id, $this->curated_meta_slug.'_status', true );	
+		$this->assertEquals( 'trash', $status );
 
-		// Ensure that the curated post is completely gone
-		$this->assertEquals( null, get_post( $curated_post ) );
+		// Ensure that the trashed curated post still has the original post meta.
+		$this->assertEquals( $post_id, cur_get_original_post( $curated_post ) );
 	}
 	
 	/**
