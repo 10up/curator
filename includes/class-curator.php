@@ -178,6 +178,18 @@ class CUR_Curator extends CUR_Singleton {
 	 * @since 0.1.0
 	 */
 	public function curate_post( $post_id, $post ) {
+		
+		$curated_post = cur_get_curated_post( $post_id );
+		// This post is already curated.
+		if ( $curated_post && is_int( $curated_post ) ) {
+			$curated_post_obj = get_post( $curated_post );
+			if( 'trash' === $curated_post_obj->post_status ) {
+				wp_untrash_post( $curated_post );
+				cur_update_curation_status( $post_id, false );
+			}
+			return $curated_post;	
+		}
+				
 
 		// Create a post and add in as meta the original post's ID
 		// @todo Get top ordered posts and place on top (via menu_order)
@@ -225,6 +237,24 @@ class CUR_Curator extends CUR_Singleton {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Set the curation status of a post
+	 *
+	 * @param $post
+	 * @param $status
+	 * @since 0.2.0
+	 */	
+	public function update_curation_status( $post_id, $trashed = false ) {
+		
+		if( ! in_array( get_post_type( $post_id ), cur_get_post_types() ) &&  cur_get_cpt_slug() !== get_post_type( $post_id )  ) {
+			return;
+		}
+				
+		$status = ( $trashed ) ? 'trash' : 'live';
+		
+		update_post_meta( $post_id, $this->curated_meta_slug.'_status', $status );
 	}
 
 	/**
@@ -771,6 +801,11 @@ function cur_uncurate_item( $post_id ) {
 
 function cur_curate_post( $post_id, $post ) {
 	return CUR_Curator::factory()->curate_post( $post_id, $post );
+}
+
+
+function cur_update_curation_status( $post_id, $trashed = false ) {
+	return CUR_Curator::factory()->update_curation_status( $post_id, $trashed );
 }
 
 function cur_get_pinner_option_slug() {

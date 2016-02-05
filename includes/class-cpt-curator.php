@@ -20,7 +20,15 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	 * @var string
 	 */
 	public $cpt_url_slug = 'curator';
-
+	
+	/**
+	 * Slug of post meta to store ID of related post
+	 *
+	 * @var string
+	 * @since 0.1.0
+	 */
+	private $curated_meta_slug = '_curator_related_id';
+	
 	/**
 	 * Build it
 	 *
@@ -41,6 +49,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
 
 		add_action( 'trashed_post', array( $this, 'trashed_post' ), 200 );
+		add_action( 'untrash_post', array( $this, 'untrash_post' ) );
 
 		// Modify the edit post link to go directly to the original item
 		add_filter( 'get_edit_post_link', array( $this, 'filter_edit_post_link' ), 10, 3 );
@@ -81,16 +90,45 @@ class CUR_CPT_Curator extends CUR_Singleton {
 	}
 
 	/**
-	 * Disable the trash for this post type, as it just confuses things
+	 * Add trash statuses in both the original and curated post meta when curated post is trashed.
 	 *
 	 * @param $post_id
 	 */
 	public function trashed_post( $post_id ) {
 		if ( cur_get_cpt_slug() === get_post_type( $post_id ) || in_array( get_post_type( $post_id ), cur_get_post_types() ) ) {
+			
+			$original_post = cur_get_original_post( $post_id );
+			
+			if( $original_post !== $post_id ) {
+				cur_update_curation_status( $original_post, true );
+			}
 
-			// Get the ID of the main item, and then use the same removal/disconnect method
-			cur_uncurate_item( $post_id );
+		}else {
+			// If the original post is trashed, delete the curated post otherwise leaving it in the curated list can be deceptive.
+			cur_uncurate_item( $post_id );						
+				
+		}				
+		
+	}
+	
+	/**
+	 * Update trash statuses to live in both the original and curated post meta when curated post is untrashed.
+	 *
+	 * @param $post_id
+	 */	
+	function untrash_post( $post_id ) {
+		
+		
+		if ( cur_get_cpt_slug() === get_post_type( $post_id ) ) {
+			
+			$original_post = cur_get_original_post( $post_id );
+			
+			if( $original_post !== $post_id ) {			
+				cur_update_curation_status( $original_post, false );
+			}
+
 		}
+		
 	}
 
 	/**
@@ -119,7 +157,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		$curated_post = cur_get_curated_post( $post->ID );
 
 		if ( false !== $curated_post ) {
-			$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
+			if( 'trash' !== get_post_meta( $post->ID, $this->curated_meta_slug.'_status', true ) ) {
+				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );	
+			}	
 		}
 
 		foreach ( $modules as $module => $module_info ) {
@@ -199,7 +239,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			$curate_term = cur_get_module_term( 'curator' );
 
 			// This post is not curated
-			if ( false === $curated_post ) {
+			if ( false === $curated_post || 'trash' == get_post_meta( $post->ID, $this->curated_meta_slug.'_status', true ) ) {
 
 				// This post is not curated; we wish to curate it
 				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
