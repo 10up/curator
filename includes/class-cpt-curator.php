@@ -253,17 +253,9 @@ class CUR_CPT_Curator extends CUR_Singleton {
 
 				// Post associated with term; no change
 				if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
-
-					// Featurer is enabled, allow for custom sizes
-					if ( ! empty( $_POST['cur-featurer-size'] ) ) {
-						if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
-
-							// Ensure custom sizes exist
-							$sizes = cur_get_featurer_sizes();
-							if ( ! empty( $sizes ) ) {
-								update_post_meta( $curated_post, 'cur_featured_size', sanitize_text_field( $_POST['cur-featurer-size'] ) );
-							}
-						}
+					
+					if ( 'featurer' === $module ) {
+						$this->set_featurer_size( $curated_post );
 					}
 
 					continue;
@@ -304,6 +296,29 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 
 
+	}
+	
+	/**
+	 * Set featurer size during save post.
+	 *
+	 * @param $post_id
+	 */	
+	function set_featurer_size( $post ) {
+		// Featurer is enabled, allow for custom sizes
+		if ( empty( $_POST['cur-featurer-size'] ) ) {
+			return;
+		}
+		if ( ! cur_is_module_enabled( 'featurer' ) ) {
+			return;
+		}
+
+		// Ensure custom sizes exist
+		$sizes = cur_get_featurer_sizes();
+		if ( empty( $sizes ) ) {
+			return;
+		}
+
+		update_post_meta( $post, 'cur_featured_size', sanitize_text_field( $_POST['cur-featurer-size'] ) );
 	}
 
 	/**
