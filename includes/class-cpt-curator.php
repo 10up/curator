@@ -194,7 +194,10 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		 * Curate/Uncurate item logic
 		 * Run before anything else
 		 */
-		if ( ! empty( $modules['curator'] ) && $modules['curator']['enabled'] && true === $modules['curator']['enabled'] ) {
+		if ( empty( $modules['curator'] ) || ! $modules['curator']['enabled'] || true !== $modules['curator']['enabled'] ) {
+			return;
+		}
+		
 			$curated_post = cur_get_curated_post( $post->ID );
 			$curate_term = cur_get_module_term( 'curator' );
 
@@ -222,14 +225,18 @@ class CUR_CPT_Curator extends CUR_Singleton {
 			}
 
 			// Only run other modules if this post has been curated
-			if ( false !== $curated_post ) {
+			if ( false === $curated_post ) {
+				return;
+			}
 				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
 				/**
 				 * Run through and set/unset our other modules
 				 */
 				foreach ( $modules as $module => $module_info ) {
-					if ( ! empty( $module_info['enabled'] ) && true === $module_info['enabled'] && ! empty( $module_info['slug'] ) ) {
+					if ( empty( $module_info['enabled'] ) || true !== $module_info['enabled'] || empty( $module_info['slug'] ) ) {
+						continue;
+					}
 
 						// Skip the curator module, already handled that logic above
 						if ( 'curator' === $module ) {
@@ -290,15 +297,15 @@ class CUR_CPT_Curator extends CUR_Singleton {
 								}
 							}
 						}
-					}
+					
 				}
 
 				// We have a change to make
 				if ( ! empty( $set_modules ) ) {
 					cur_set_item_modules( $set_modules, $curated_post );
 				}
-			}
-		}
+			
+
 	}
 
 	/**
