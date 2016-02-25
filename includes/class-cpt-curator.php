@@ -152,6 +152,7 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		}
 	}
 
+
 	/**
 	 * Set whether the post should be curated or not
 	 *
@@ -197,114 +198,111 @@ class CUR_CPT_Curator extends CUR_Singleton {
 		if ( empty( $modules['curator'] ) || ! $modules['curator']['enabled'] || true !== $modules['curator']['enabled'] ) {
 			return;
 		}
-		
-			$curated_post = cur_get_curated_post( $post->ID );
-			$curate_term = cur_get_module_term( 'curator' );
 
-			// This post is not curated
-			if ( false === $curated_post ) {
+		$curated_post = cur_get_curated_post( $post->ID );
+		$curate_term  = cur_get_module_term( 'curator' );
 
-				// This post is not curated; we wish to curate it
-				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
-					$curated_post = cur_curate_post( $post_id, $post );
-				}
+		// This post is not curated
+		if ( false === $curated_post ) {
+
+			// This post is not curated; we wish to curate it
+			if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+				$curated_post = cur_curate_post( $post_id, $post );
 			}
+		} // This post is curated
+		else {
 
-			// This post is curated
+			// This post is curated; we don't want to uncurate it. Grab the curated post id
+			if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
+				$curated_post = cur_get_related_id( $post_id );
+			} // This post is curated and we want to uncurate it
 			else {
+				cur_uncurate_item( $post_id );
+			}
+		}
 
-				// This post is curated; we don't want to uncurate it. Grab the curated post id
-				if ( isset( $_POST[ $curate_term ] ) && 'on' === $_POST[ $curate_term ] ) {
-					$curated_post = cur_get_related_id( $post_id );
-				}
+		// Only run other modules if this post has been curated
+		if ( false === $curated_post ) {
+			return;
+		}
+		$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
-				// This post is curated and we want to uncurate it
-				else {
-					cur_uncurate_item( $post_id );
-				}
+		/**
+		 * Run through and set/unset our other modules
+		 */
+		foreach ( $modules as $module => $module_info ) {
+			if ( empty( $module_info['enabled'] ) || true !== $module_info['enabled'] || empty( $module_info['slug'] ) ) {
+				continue;
 			}
 
-			// Only run other modules if this post has been curated
-			if ( false === $curated_post ) {
-				return;
+			// Skip the curator module, already handled that logic above
+			if ( 'curator' === $module ) {
+				continue;
 			}
-				$associated_terms = wp_list_pluck( wp_get_object_terms( $curated_post, cur_get_tax_slug() ), 'slug', 'term_id' );
 
-				/**
-				 * Run through and set/unset our other modules
-				 */
-				foreach ( $modules as $module => $module_info ) {
-					if ( empty( $module_info['enabled'] ) || true !== $module_info['enabled'] || empty( $module_info['slug'] ) ) {
-						continue;
-					}
+			// Get term object
+			$term = get_term_by( 'slug', $module_info['slug'], cur_get_tax_slug() );
 
-						// Skip the curator module, already handled that logic above
-						if ( 'curator' === $module ) {
-							continue;
-						}
+			if ( empty( $term->slug ) ) {
+				continue;
+			}
+			$term_slug = $term->slug;
 
-						// Get term object
-						$term = get_term_by( 'slug', $module_info['slug'], cur_get_tax_slug() );
+			// See if term is currently associated with post
+			if ( ! empty( $associated_terms[ $term->term_id ] ) && $module_info['slug'] === $term_slug ) {
 
-						if ( ! empty( $term->slug ) ) {
-							$term_slug = $term->slug;
+				// Post associated with term; no change
+				if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
 
-							// See if term is currently associated with post
-							if ( ! empty( $associated_terms[ $term->term_id ] ) && $module_info['slug'] === $term_slug ) {
+					// Featurer is enabled, allow for custom sizes
+					if ( ! empty( $_POST['cur-featurer-size'] ) ) {
+						if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
 
-								// Post associated with term; no change
-								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
-
-									// Featurer is enabled, allow for custom sizes
-									if ( ! empty( $_POST['cur-featurer-size'] ) ) {
-										if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
-
-											// Ensure custom sizes exist
-											$sizes = cur_get_featurer_sizes();
-											if ( ! empty( $sizes ) ) {
-												update_post_meta( $curated_post, 'cur_featured_size', sanitize_text_field( $_POST['cur-featurer-size'] ) );
-											}
-										}
-									}
-
-									continue;
-								} // Post associated with term; remove term association
-								else if ( ! isset( $_POST[ $term_slug ] ) ) {
-									$set_modules[ $module ] = 'remove';
-
-									// If pinner module, remove from pinned items array
-									if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
-										cur_unpin_item( $curated_post );
-									}
-
-									// Ensure custom sizes exist
-									$sizes = cur_get_featurer_sizes();
-									if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
-										delete_post_meta( $curated_post, 'cur_featured_size' );
-									}
-								}
-							} // Post not associated with term
-							else {
-
-								// Post not associated with term; add term association
-								if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
-									$set_modules[ $module ] = 'add';
-
-									// If pinner module, add to pinner array
-									if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
-										cur_pin_item( $curated_post );
-									}
-								}
+							// Ensure custom sizes exist
+							$sizes = cur_get_featurer_sizes();
+							if ( ! empty( $sizes ) ) {
+								update_post_meta( $curated_post, 'cur_featured_size', sanitize_text_field( $_POST['cur-featurer-size'] ) );
 							}
 						}
-					
-				}
+					}
 
-				// We have a change to make
-				if ( ! empty( $set_modules ) ) {
-					cur_set_item_modules( $set_modules, $curated_post );
+					continue;
+				} // Post associated with term; remove term association
+				else if ( ! isset( $_POST[ $term_slug ] ) ) {
+					$set_modules[ $module ] = 'remove';
+
+					// If pinner module, remove from pinned items array
+					if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
+						cur_unpin_item( $curated_post );
+					}
+
+					// Ensure custom sizes exist
+					$sizes = cur_get_featurer_sizes();
+					if ( 'featurer' === $module && cur_is_module_enabled( 'featurer' ) ) {
+						delete_post_meta( $curated_post, 'cur_featured_size' );
+					}
 				}
-			
+			} // Post not associated with term
+			else {
+
+				// Post not associated with term; add term association
+				if ( isset( $_POST[ $term_slug ] ) && 'on' === $_POST[ $term_slug ] ) {
+					$set_modules[ $module ] = 'add';
+
+					// If pinner module, add to pinner array
+					if ( 'pinner' === $module && cur_is_module_enabled( 'pinner' ) ) {
+						cur_pin_item( $curated_post );
+					}
+				}
+			}
+
+		}
+
+		// We have a change to make
+		if ( ! empty( $set_modules ) ) {
+			cur_set_item_modules( $set_modules, $curated_post );
+		}
+
 
 	}
 
